@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
-    val tissue = Tissue(50, 50)
-    var tissueView: TissueView? = null
+    private val tissue = TissueModel(50, 50)
+    private var tissueView: TissueView? = null
     lateinit var buttonPanel: PanelView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,24 +14,28 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         tissueView = findViewById(R.id.tissueView)
-        tissueView!!.tissue = tissue
+        tissueView!!.tissueModel = tissue
         tissueView!!.callback = this
 
         buttonPanel = findViewById(R.id.buttonPanel)
 
-        kotlin.concurrent.timer(null, false, 0.toLong(), 10) {
-            println(System.currentTimeMillis())
-            repeat(10) {
-                tissue.forAll { it.membranePotential() }
-                tissue.forAll { it.calculateCharge() }
-                tissue.forAll { it.updateState() }
+        //kotlin.concurrent.timer(null, false, 0.toLong(), 300) {
+        Thread {
+            while(true) {
+                val startTime = System.currentTimeMillis()
+                repeat (100) {
+                    val tempTissue = tissueView!!.tissueModel!!.clone()
+                    tempTissue.calcAll()
+                    tissueView!!.tissueModel = tempTissue
+                }
+                println(System.currentTimeMillis() - startTime)
+                runOnUiThread { tissueView!!.invalidate() }
             }
-            runOnUiThread { tissueView!!.invalidate() }
-        }
+        }.start()
     }
     fun onClickOnCell(x: Int, y: Int) {
         println("$x, $y")
-        val newCell: Cell =when {
+        val newCell: Cell = when {
                     buttonPanel.autoButton.isChecked -> AutoCell(tissue, x, y)
                     buttonPanel.myoButton.isChecked -> MyoCell(tissue, x, y)
                     buttonPanel.fastButton.isChecked -> FastCell(tissue, x, y)
