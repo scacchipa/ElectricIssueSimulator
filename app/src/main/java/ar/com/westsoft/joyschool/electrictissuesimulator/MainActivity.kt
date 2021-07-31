@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             var tempo = 0f
             while(true) {
-                Thread.sleep(50)
+                Thread.sleep(20)
                 val tempTissue = tissueView.tissueModel!!.clone()
                 tempTissue.calcAll()
                 tissueView.tissueModel = tempTissue

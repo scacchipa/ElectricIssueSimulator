@@ -36,10 +36,15 @@ class CoordenateGraph: View {
         if (coordGraphModel != null) {
             val bound = coordGraphModel!!.bound
             if (bound.width() != 0f && bound.height() != 0f) {
+                val xScale = width.toFloat() / bound.width()
+                val yScale = height.toFloat() / bound.height()
+                canvas!!.translate(
+                    - bound.left * xScale,
+                    - bound.bottom * yScale + height.toFloat())
+                canvas.scale(xScale, yScale)
+
                 coordGraphModel!!.points.forEach { point ->
-                    val x = (point.first - bound.left) / bound.width() * width
-                    val y = height - (point.second - bound.top) / bound.height() * height
-                    canvas!!.drawPoint(x, y, paint)
+                    canvas.drawPoint(point.first, point.second, paint)
                 }
             }
         }
@@ -61,9 +66,9 @@ class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()) {
 
         points.forEach { point ->
             tempBound.left = min(tempBound.left, point.first)
-            tempBound.top = min(tempBound.top, point.second)
+            tempBound.top = max(tempBound.top, point.second)
             tempBound.right = max(tempBound.right, point.first)
-            tempBound.bottom = max(tempBound.bottom, point.second)
+            tempBound.bottom = min(tempBound.bottom, point.second)
         }
         return tempBound
     }
