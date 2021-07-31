@@ -5,44 +5,52 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
-    private val tissue = TissueModel(50, 50)
-    private var tissueView: TissueView? = null
+    var tissueModel = TissueModel(50,50)
+    var coordGraphModel = CoordGraphModel()
     lateinit var buttonPanel: PanelView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        tissueView = findViewById(R.id.tissueView)
-        tissueView!!.tissueModel = tissue
-        tissueView!!.callback = this
+        val tissueView: TissueView = findViewById(R.id.tissueView)
+         tissueView.tissueModel = tissueModel
+        tissueView.callback = this
+
+        val coordenateGraph: CoordenateGraph = findViewById(R.id.coordenateGraph)
+        coordenateGraph.coordGraphModel = coordGraphModel
 
         buttonPanel = findViewById(R.id.buttonPanel)
 
-        //kotlin.concurrent.timer(null, false, 0.toLong(), 300) {
         Thread {
+            var tempo = 0f
             while(true) {
-                val startTime = System.currentTimeMillis()
-                repeat (100) {
-                    val tempTissue = tissueView!!.tissueModel!!.clone()
-                    tempTissue.calcAll()
-                    tissueView!!.tissueModel = tempTissue
+                Thread.sleep(50)
+                val tempTissue = tissueView.tissueModel!!.clone()
+                tempTissue.calcAll()
+                tissueView.tissueModel = tempTissue
+
+                val cell = tissueView.tissueModel!!.getCell(10,10)
+                coordGraphModel = coordGraphModel.add( Pair(tempo, cell.vm.toFloat()) )
+                tempo++
+                coordenateGraph.coordGraphModel = coordGraphModel
+                runOnUiThread {
+                    tissueView.invalidate()
+                    coordenateGraph.invalidate()
                 }
-                println(System.currentTimeMillis() - startTime)
-                runOnUiThread { tissueView!!.invalidate() }
             }
         }.start()
     }
     fun onClickOnCell(x: Int, y: Int) {
         println("$x, $y")
         val newCell: Cell = when {
-                    buttonPanel.autoButton.isChecked -> AutoCell(tissue, x, y)
-                    buttonPanel.myoButton.isChecked -> MyoCell(tissue, x, y)
-                    buttonPanel.fastButton.isChecked -> FastCell(tissue, x, y)
-                    else -> DeadCell(tissue, x, y)
+                    buttonPanel.autoButton.isChecked -> AutoCell(tissueModel!!, x, y)
+                    buttonPanel.myoButton.isChecked -> MyoCell(tissueModel!!, x, y)
+                    buttonPanel.fastButton.isChecked -> FastCell(tissueModel!!, x, y)
+                    else -> DeadCell(tissueModel!!, x, y)
                 }
-        tissue.setCell(x, y, newCell)
-        tissueView!!.invalidate()
+        tissueModel!!.setCell(x, y, newCell)
+        findViewById<TissueView>(R.id.tissueView).invalidate()
     }
 }
 
