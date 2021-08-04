@@ -13,23 +13,24 @@ abstract class Cell(open val tissueModel: TissueModel, open val colPos: Int, ope
     protected var charge = -70.0
     var step = 600
 
-    fun upperCell(): Cell? = if (rowPos > 0) tissueModel.getCell(colPos, rowPos - 1) else null
-    fun lowerCell(): Cell? = if (rowPos < tissueModel.ySize - 1) tissueModel.getCell(colPos, rowPos + 1) else null
-    fun leftCell(): Cell? = if (colPos > 0) tissueModel.getCell(colPos - 1, rowPos) else null
-    fun rightCell(): Cell? = if (colPos < tissueModel.xSize - 1) tissueModel.getCell(colPos + 1, rowPos) else null
-    fun lowerLeftCell(): Cell? =
+    fun upperCell() = if (rowPos > 0) tissueModel.getCell(colPos, rowPos - 1) else null
+    fun lowerCell() = if (rowPos < tissueModel.ySize - 1) tissueModel.getCell(colPos, rowPos + 1) else null
+    fun leftCell() = if (colPos > 0) tissueModel.getCell(colPos - 1, rowPos) else null
+    fun rightCell() = if (colPos < tissueModel.xSize - 1) tissueModel.getCell(colPos + 1, rowPos) else null
+    fun lowerLeftCell() =
         if (colPos > 0 && rowPos < tissueModel.ySize - 1)
             tissueModel.getCell(colPos - 1, rowPos + 1)
         else null
-    fun lowerRightCell(): Cell? =
+    fun lowerRightCell() =
         if (colPos < tissueModel.xSize - 1 && rowPos < tissueModel.ySize - 1)
             tissueModel.getCell(colPos + 1, rowPos + 1)
         else null
-    fun upperLeftCell(): Cell? =
-        if (colPos > 0 && rowPos < tissueModel.ySize - 1) tissueModel.getCell(colPos - 1, rowPos - 1)
+    fun upperLeftCell() =
+        if (colPos > 0 && rowPos > 0)
+            tissueModel.getCell(colPos - 1, rowPos - 1)
         else null
-    fun upperRightCell(): Cell? =
-        if (colPos < tissueModel.xSize - 1 && rowPos < tissueModel.ySize - 1)
+    fun upperRightCell() =
+        if (colPos < tissueModel.xSize - 1 && rowPos > 0)
             tissueModel.getCell(colPos + 1, rowPos - 1)
         else null
 
