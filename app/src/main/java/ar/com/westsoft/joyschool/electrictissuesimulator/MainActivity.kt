@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         buttonPanel = findViewById(R.id.buttonPanel)
 
+        MyoCell.alphaVector.forEachIndexed { index, value -> println("$index, $value") }
         Thread {
             var tempo = 0f
             while(true) {
@@ -40,6 +41,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }.start()
+
+
     }
     fun onClickOnCell(x: Int, y: Int) {
         println("$x, $y")

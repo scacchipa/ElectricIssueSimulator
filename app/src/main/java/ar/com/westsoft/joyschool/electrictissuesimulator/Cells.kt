@@ -43,7 +43,7 @@ abstract class Cell(open val tissueModel: TissueModel, open val colPos: Int, ope
     companion object {
         fun buildAlphaVector(incomingVector: List<Pair<Double, Double>>): DoubleArray {
             var lastTime = 0.0
-            var lastVm = incomingVector[0].first
+            var lastVm = incomingVector[0].second
             val alphaList = MutableList(0) { 0.0 }
             incomingVector.forEach { (time, vm) ->
                 for (idx in 0 until (time - lastTime).toInt()) {
