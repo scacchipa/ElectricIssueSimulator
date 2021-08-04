@@ -2,10 +2,14 @@ package ar.com.westsoft.joyschool.electrictissuesimulator
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 
 class MainActivity : AppCompatActivity() {
 
-    var tissueModel = TissueModel(50,50)
+    var tissueViewModel = TissueViewModel(50,50)
     var coordGraphModel = CoordGraphModel()
     lateinit var buttonPanel: PanelView
 
@@ -14,45 +18,46 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val tissueView: TissueView = findViewById(R.id.tissueView)
-         tissueView.tissueModel = tissueModel
+        tissueView.tissueViewModel = tissueViewModel
         tissueView.callback = this
 
         val coordenateGraph: CoordenateGraph = findViewById(R.id.coordenateGraph)
         coordenateGraph.coordGraphModel = coordGraphModel
 
         buttonPanel = findViewById(R.id.buttonPanel)
+        val mainContext = newSingleThreadContext("CounterContext")
 
-        MyoCell.alphaVector.forEachIndexed { index, value -> println("$index, $value") }
-        Thread {
+        CoroutineScope(Dispatchers.Main).launch {
             var tempo = 0f
-            while(true) {
-                Thread.sleep(20)
-                val tempTissue = tissueView.tissueModel!!.clone()
-                tempTissue.calcAll()
-                tissueView.tissueModel = tempTissue
+            val mainJob = launch(mainContext) {
+                while (true) {
 
-                val cell = tissueView.tissueModel!!.getCell(10,10)
-                coordGraphModel = coordGraphModel.add( Pair(tempo, cell.vm.toFloat()) )
-                tempo++
-                coordenateGraph.coordGraphModel = coordGraphModel
-                runOnUiThread {
-                    tissueView.invalidate()
-                    coordenateGraph.invalidate()
+                    val tempTissue = tissueView.tissueViewModel!!.clone()
+                    tempTissue.calcAll()
+                    tissueView.tissueViewModel = tempTissue
+
+                    val cell = tissueView.tissueViewModel!!.getCell(10, 10)
+                    coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
+                    tempo++
+                    coordenateGraph.coordGraphModel = coordGraphModel
+
+                    launch(Dispatchers.Main) {
+                        tissueView.invalidate()
+                        coordenateGraph.invalidate()
+                    }
                 }
             }
-        }.start()
-
-
+        }
     }
     fun onClickOnCell(x: Int, y: Int) {
         println("$x, $y")
         val newCell: Cell = when {
-                    buttonPanel.autoButton.isChecked -> AutoCell(tissueModel!!, x, y)
-                    buttonPanel.myoButton.isChecked -> MyoCell(tissueModel!!, x, y)
-                    buttonPanel.fastButton.isChecked -> FastCell(tissueModel!!, x, y)
-                    else -> DeadCell(tissueModel!!, x, y)
+                    buttonPanel.autoButton.isChecked -> AutoCell(tissueViewModel, x, y)
+                    buttonPanel.myoButton.isChecked -> MyoCell(tissueViewModel, x, y)
+                    buttonPanel.fastButton.isChecked -> FastCell(tissueViewModel, x, y)
+                    else -> DeadCell(tissueViewModel, x, y)
                 }
-        tissueModel!!.setCell(x, y, newCell)
+        tissueViewModel.setCell(x, y, newCell)
         findViewById<TissueView>(R.id.tissueView).invalidate()
     }
 }

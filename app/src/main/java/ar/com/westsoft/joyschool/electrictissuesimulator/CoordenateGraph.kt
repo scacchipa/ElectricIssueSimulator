@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.lifecycle.ViewModel
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,7 +51,7 @@ class CoordenateGraph: View {
         }
     }
 }
-class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()) {
+class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()): ViewModel() {
     val bound: RectF
 
     init {

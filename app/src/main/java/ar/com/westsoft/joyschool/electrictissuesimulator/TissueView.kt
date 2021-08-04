@@ -9,7 +9,7 @@ import android.view.View
 import kotlin.math.floor
 
 class TissueView: View {
-    var tissueModel: TissueModel? = null
+    var tissueViewModel: TissueViewModel? = null
     val xSize = 10f
     val ySize = 10f
     var callback: MainActivity? = null
@@ -41,9 +41,9 @@ class TissueView: View {
     }
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        for (x in 0 until tissueModel!!.xSize) {
-            for (y in 0 until tissueModel!!.ySize) {
-                paint.color = tissueModel!!.getCell(x, y).stateColor()
+        for (x in 0 until tissueViewModel!!.xSize) {
+            for (y in 0 until tissueViewModel!!.ySize) {
+                paint.color = tissueViewModel!!.getCell(x, y).stateColor()
                 canvas!!.drawRect(x * xSize + 1, y * ySize + 1,
                         x * xSize + xSize - 1, y * ySize + ySize - 1,
                         paint)

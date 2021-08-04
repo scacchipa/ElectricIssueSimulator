@@ -6,32 +6,32 @@ enum class ChannelState {
     RESTING, OPEN, INACTIVE
 }
 
-abstract class Cell(open val tissueModel: TissueModel, open val colPos: Int, open val rowPos: Int) {
+abstract class Cell(open val tissueViewModel: TissueViewModel, open val colPos: Int, open val rowPos: Int) {
     var state = ChannelState.RESTING
 
     var vm = -70.0
     protected var charge = -70.0
     var step = 600
 
-    fun upperCell() = if (rowPos > 0) tissueModel.getCell(colPos, rowPos - 1) else null
-    fun lowerCell() = if (rowPos < tissueModel.ySize - 1) tissueModel.getCell(colPos, rowPos + 1) else null
-    fun leftCell() = if (colPos > 0) tissueModel.getCell(colPos - 1, rowPos) else null
-    fun rightCell() = if (colPos < tissueModel.xSize - 1) tissueModel.getCell(colPos + 1, rowPos) else null
+    fun upperCell() = if (rowPos > 0) tissueViewModel.getCell(colPos, rowPos - 1) else null
+    fun lowerCell() = if (rowPos < tissueViewModel.ySize - 1) tissueViewModel.getCell(colPos, rowPos + 1) else null
+    fun leftCell() = if (colPos > 0) tissueViewModel.getCell(colPos - 1, rowPos) else null
+    fun rightCell() = if (colPos < tissueViewModel.xSize - 1) tissueViewModel.getCell(colPos + 1, rowPos) else null
     fun lowerLeftCell() =
-        if (colPos > 0 && rowPos < tissueModel.ySize - 1)
-            tissueModel.getCell(colPos - 1, rowPos + 1)
+        if (colPos > 0 && rowPos < tissueViewModel.ySize - 1)
+            tissueViewModel.getCell(colPos - 1, rowPos + 1)
         else null
     fun lowerRightCell() =
-        if (colPos < tissueModel.xSize - 1 && rowPos < tissueModel.ySize - 1)
-            tissueModel.getCell(colPos + 1, rowPos + 1)
+        if (colPos < tissueViewModel.xSize - 1 && rowPos < tissueViewModel.ySize - 1)
+            tissueViewModel.getCell(colPos + 1, rowPos + 1)
         else null
     fun upperLeftCell() =
         if (colPos > 0 && rowPos > 0)
-            tissueModel.getCell(colPos - 1, rowPos - 1)
+            tissueViewModel.getCell(colPos - 1, rowPos - 1)
         else null
     fun upperRightCell() =
-        if (colPos < tissueModel.xSize - 1 && rowPos > 0)
-            tissueModel.getCell(colPos + 1, rowPos - 1)
+        if (colPos < tissueViewModel.xSize - 1 && rowPos > 0)
+            tissueViewModel.getCell(colPos + 1, rowPos - 1)
         else null
 
     abstract fun calculateCharge()
@@ -57,8 +57,8 @@ abstract class Cell(open val tissueModel: TissueModel, open val colPos: Int, ope
     }
 }
 
-data class MyoCell(override val tissueModel: TissueModel, override val colPos: Int, override val rowPos: Int)
-    : Cell(tissueModel, colPos, rowPos) {
+data class MyoCell(override val tissueViewModel: TissueViewModel, override val colPos: Int, override val rowPos: Int)
+    : Cell(tissueViewModel, colPos, rowPos) {
     companion object {
         val alphaVector = buildAlphaVector(arrayOf(
             Pair(0.0, -75.0),   Pair(10.0, -70.0),  Pair(20.0, -65.0),  Pair(30.0, -60.0),
@@ -98,8 +98,8 @@ data class MyoCell(override val tissueModel: TissueModel, override val colPos: I
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        if (colPos < 1 || colPos >= (tissueModel.xSize - 1)
-            || rowPos < 1 || rowPos >= (tissueModel.ySize - 1))
+        if (colPos < 1 || colPos >= (tissueViewModel.xSize - 1)
+            || rowPos < 1 || rowPos >= (tissueViewModel.ySize - 1))
             return
 
         this.charge = (0.4 * vm) +
@@ -116,11 +116,11 @@ data class MyoCell(override val tissueModel: TissueModel, override val colPos: I
         this.vm = alphaVector[step]
     }
     override fun stateColor(): Int = stateColors[state]!!
-    override fun clone(): Cell = MyoCell(tissueModel, colPos, rowPos)
+    override fun clone(): Cell = MyoCell(tissueViewModel, colPos, rowPos)
 }
 
-class AutoCell(tissueModel: TissueModel, colPos: Int, rowPos: Int)
-    : Cell(tissueModel, colPos, rowPos) {
+class AutoCell(tissueViewModel: TissueViewModel, colPos: Int, rowPos: Int)
+    : Cell(tissueViewModel, colPos, rowPos) {
     companion object {
         val alphaVector = buildAlphaVector(arrayOf(
             Pair(0.0, -55.0), Pair(10.0, -53.0), Pair(20.0, -50.0), Pair(30.0, -43.0),
@@ -180,8 +180,8 @@ class AutoCell(tissueModel: TissueModel, colPos: Int, rowPos: Int)
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        if (colPos < 1 || colPos >= (tissueModel.xSize - 1) || rowPos < 1
-            || rowPos >= (tissueModel.ySize - 1))
+        if (colPos < 0 || colPos >= (tissueViewModel.xSize - 1) || rowPos < 0
+            || rowPos >= (tissueViewModel.ySize - 1))
             return
 
         charge = (0.6 * vm) +
@@ -198,11 +198,11 @@ class AutoCell(tissueModel: TissueModel, colPos: Int, rowPos: Int)
         this.vm = alphaVector[step]
     }
     override fun stateColor(): Int = stateColors[state]!!
-    override fun clone(): Cell = AutoCell(tissueModel, colPos, rowPos)
+    override fun clone(): Cell = AutoCell(tissueViewModel, colPos, rowPos)
 }
 
-class DeadCell (tissueModel: TissueModel, colPos: Int, rowPos: Int)
-    : Cell(tissueModel, colPos, rowPos) {
+class DeadCell (tissueViewModel: TissueViewModel, colPos: Int, rowPos: Int)
+    : Cell(tissueViewModel, colPos, rowPos) {
     companion object {
         val alphaVector = doubleArrayOf(0.0)
         val stateColors = hashMapOf (
@@ -220,11 +220,11 @@ class DeadCell (tissueModel: TissueModel, colPos: Int, rowPos: Int)
 
     }
     override fun stateColor(): Int = stateColors[state]!!
-    override fun clone(): Cell = DeadCell(tissueModel, colPos, rowPos)
+    override fun clone(): Cell = DeadCell(tissueViewModel, colPos, rowPos)
 }
 
-class FastCell (tissueModel: TissueModel, colPos: Int, rowPos: Int)
-    : Cell(tissueModel, colPos, rowPos) {
+class FastCell (tissueViewModel: TissueViewModel, colPos: Int, rowPos: Int)
+    : Cell(tissueViewModel, colPos, rowPos) {
     companion object {
         val alphaVector = buildAlphaVector(arrayOf(
             Pair(0.0, -75.0), Pair(10.0, -20.0), Pair(20.0, 25.0), Pair(30.0, 10.0),
@@ -258,8 +258,8 @@ class FastCell (tissueModel: TissueModel, colPos: Int, rowPos: Int)
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        if (colPos < 1 || colPos >= (tissueModel.xSize - 1) || rowPos < 1
-            || rowPos >= (tissueModel.ySize - 1)) {
+        if (colPos < 1 || colPos >= (tissueViewModel.xSize - 1) || rowPos < 1
+            || rowPos >= (tissueViewModel.ySize - 1)) {
             return
         }
 
@@ -277,6 +277,6 @@ class FastCell (tissueModel: TissueModel, colPos: Int, rowPos: Int)
         this.vm = alphaVector[step]
     }
     override fun stateColor(): Int = stateColors[state]!!
-    override fun clone(): Cell = FastCell(tissueModel, colPos, rowPos)
+    override fun clone(): Cell = FastCell(tissueViewModel, colPos, rowPos)
 }
 

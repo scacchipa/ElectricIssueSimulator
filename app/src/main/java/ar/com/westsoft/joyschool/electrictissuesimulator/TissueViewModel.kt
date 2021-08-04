@@ -1,16 +1,20 @@
 package ar.com.westsoft.joyschool.electrictissuesimulator
 
-class TissueModel {
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.sync.Mutex
+
+class TissueViewModel: ViewModel {
     val xSize: Int
     val ySize: Int
     private val tissue: Array<Array<Cell>>
+    val mutex = Mutex()
 
-    constructor(xSize: Int,ySize: Int) {
+    constructor(xSize: Int, ySize: Int): super() {
         this.xSize = xSize
         this.ySize = xSize
         this.tissue = Array(xSize)  { col -> Array(ySize) { row -> MyoCell(this, col, row) } }
     }
-    constructor(xSize: Int, ySize: Int, tissue: Array<Array<Cell>>) {
+    constructor(xSize: Int, ySize: Int, tissue: Array<Array<Cell>>): super() {
         this.xSize = xSize
         this.ySize = ySize
         this.tissue = tissue
@@ -26,7 +30,7 @@ class TissueModel {
         tissue.forEach { it.forEach { cell -> cell.apply(funcA) }
         }
     }
-    fun clone() = TissueModel(xSize, ySize, tissue.clone())
+    fun clone() = TissueViewModel(xSize, ySize, tissue.clone())
 
     fun calcAll() {
         forAll { it.membranePotential() }
