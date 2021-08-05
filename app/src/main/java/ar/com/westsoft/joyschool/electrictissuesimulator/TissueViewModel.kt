@@ -12,7 +12,7 @@ class TissueViewModel: ViewModel {
     constructor(xSize: Int, ySize: Int): super() {
         this.xSize = xSize
         this.ySize = xSize
-        this.tissue = Array(xSize)  { col -> Array(ySize) { row -> MyoCell(this, col, row) } }
+        this.tissue = Array(xSize)  { col -> Array(ySize) { row -> FastCell(this, col, row) } }
     }
     constructor(xSize: Int, ySize: Int, tissue: Array<Array<Cell>>): super() {
         this.xSize = xSize
