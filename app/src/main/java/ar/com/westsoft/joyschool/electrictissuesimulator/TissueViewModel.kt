@@ -6,9 +6,11 @@ import kotlinx.coroutines.sync.Mutex
 class TissueViewModel: ViewModel {
     val xSize: Int
     val ySize: Int
-    private val tissue: Array<Array<Cell>>
+    val tissue: Array<Array<Cell>>
     val mutex = Mutex()
-
+    init {
+        System.loadLibrary("native-lib")
+    }
     constructor(xSize: Int, ySize: Int): super() {
         this.xSize = xSize
         this.ySize = xSize
@@ -19,8 +21,7 @@ class TissueViewModel: ViewModel {
         this.ySize = ySize
         this.tissue = tissue
     }
-
-    fun getCell(x:Int, y:Int): Cell  = tissue[x][y]
+    fun getCell(x:Int, y:Int): Cell = tissue[x][y]
 
     fun setCell(x:Int, y:Int, cell:Cell) {
         this.tissue[x][y] = cell
@@ -32,14 +33,11 @@ class TissueViewModel: ViewModel {
     }
     fun clone() = TissueViewModel(xSize, ySize, tissue.clone())
 
-    fun calcAll() {
-        forAll { it.membranePotential() }
-        forAll { it.calculateCharge() }
-        forAll { it.updateState() }
-    }
-
-    //fun cloneTissue() = duplicateArray(tissue)
-    //private fun duplicateArray(tissue: Array<Array<Cell>>) = Array(xSize) { duplicateSubArray(tissue[it]) }
-    //private fun duplicateSubArray(subArray: Array<Cell>) = Array(subArray.size) { subArray[it].clone() }
+    external fun calcAll(): Array<Array<Cell>>
+//    {
+//        forAll { it.membranePotential() }
+//        forAll { it.calculateCharge() }
+//        forAll { it.updateState() }
+//    }
 }
 

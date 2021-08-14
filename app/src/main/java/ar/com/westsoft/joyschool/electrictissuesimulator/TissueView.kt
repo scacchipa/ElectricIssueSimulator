@@ -37,6 +37,7 @@ class TissueView: View {
         super.performClick()
 
         println("Screen was cl")
+        System.gc()
         return true
     }
     override fun onDraw(canvas: Canvas?) {

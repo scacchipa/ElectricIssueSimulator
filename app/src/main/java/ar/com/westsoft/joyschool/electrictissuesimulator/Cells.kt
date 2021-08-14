@@ -12,27 +12,27 @@ abstract class Cell(open val tissueViewModel: TissueViewModel, open val colPos: 
     var vm = -70.0
     protected var charge = -70.0
     var step = 600
-
-    fun upperCell() = if (rowPos > 0) tissueViewModel.getCell(colPos, rowPos - 1) else null
-    fun lowerCell() = if (rowPos < tissueViewModel.ySize - 1) tissueViewModel.getCell(colPos, rowPos + 1) else null
-    fun leftCell() = if (colPos > 0) tissueViewModel.getCell(colPos - 1, rowPos) else null
-    fun rightCell() = if (colPos < tissueViewModel.xSize - 1) tissueViewModel.getCell(colPos + 1, rowPos) else null
+    
+    fun upperCell() = if (rowPos > 0) tissueViewModel.tissue[colPos][rowPos - 1] else this
+    fun lowerCell() = if (rowPos < tissueViewModel.ySize - 1) tissueViewModel.tissue[colPos][rowPos + 1] else this
+    fun leftCell() = if (colPos > 0) tissueViewModel.tissue[colPos - 1][rowPos] else this
+    fun rightCell() = if (colPos < tissueViewModel.xSize - 1) tissueViewModel.tissue[colPos + 1][rowPos] else this
     fun lowerLeftCell() =
         if (colPos > 0 && rowPos < tissueViewModel.ySize - 1)
-            tissueViewModel.getCell(colPos - 1, rowPos + 1)
-        else null
+            tissueViewModel.tissue[colPos - 1][rowPos + 1]
+        else this
     fun lowerRightCell() =
         if (colPos < tissueViewModel.xSize - 1 && rowPos < tissueViewModel.ySize - 1)
-            tissueViewModel.getCell(colPos + 1, rowPos + 1)
-        else null
+            tissueViewModel.tissue[colPos + 1][rowPos + 1]
+        else this
     fun upperLeftCell() =
         if (colPos > 0 && rowPos > 0)
-            tissueViewModel.getCell(colPos - 1, rowPos - 1)
-        else null
+            tissueViewModel.tissue[colPos - 1][rowPos - 1]
+        else this
     fun upperRightCell() =
         if (colPos < tissueViewModel.xSize - 1 && rowPos > 0)
-            tissueViewModel.getCell(colPos + 1, rowPos - 1)
-        else null
+            tissueViewModel.tissue[colPos + 1][rowPos - 1]
+        else this
 
     abstract fun calculateCharge()
     abstract fun updateState()
@@ -90,15 +90,10 @@ data class MyoCell(override val tissueViewModel: TissueViewModel, override val c
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        this.charge = (0.4 * vm) +
-                    (0.075 * (upperCell()?:this).vm) +
-                    (0.075 * (lowerCell()?:this).vm) +
-                    (0.075 * (leftCell()?:this).vm) +
-                    (0.075 * (rightCell()?:this).vm) +
-                    (0.075 * (lowerRightCell()?:this).vm) +
-                    (0.075 * (upperRightCell()?:this).vm) +
-                    (0.075 * (upperLeftCell()?:this).vm) +
-                    (0.075 * (lowerLeftCell()?:this).vm)
+        this.charge = 0.4 * vm +
+                (upperCell().vm + lowerCell().vm + leftCell().vm +
+                    rightCell().vm + lowerRightCell().vm + upperRightCell().vm +
+                    upperLeftCell().vm + lowerLeftCell().vm) * 0.075
     }
     override fun membranePotential() {
         this.vm = alphaVector[step]
@@ -142,15 +137,10 @@ class AutoCell(tissueViewModel: TissueViewModel, colPos: Int, rowPos: Int)
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        charge = (0.6 * vm) +
-                    (0.05 * (upperCell()?:this).vm) +
-                    (0.05 * (lowerCell()?:this).vm) +
-                    (0.05 * (leftCell()?:this).vm) +
-                    (0.05 * (rightCell()?:this).vm) +
-                    (0.05 * (lowerRightCell()?:this).vm) +
-                    (0.05 * (upperRightCell()?:this).vm) +
-                    (0.05 * (upperLeftCell()?:this).vm) +
-                    (0.05 * (lowerLeftCell()?:this).vm)
+        charge = 0.6 * vm +
+                (upperCell().vm + lowerCell().vm + leftCell().vm +
+                  rightCell().vm + lowerRightCell().vm + upperRightCell().vm +
+                  upperLeftCell().vm + lowerLeftCell().vm) * 0.05
     }
     override fun membranePotential() {
         this.vm = alphaVector[step]
@@ -213,15 +203,10 @@ class FastCell (tissueViewModel: TissueViewModel, colPos: Int, rowPos: Int)
         if (step < alphaVector.size - 1) step++
     }
     override fun calculateCharge() {
-        charge = (0.4 * vm) +
-                    (0.075 * (upperCell()?:this).vm) +
-                    (0.075 * (lowerCell()?:this).vm) +
-                    (0.075 * (leftCell()?:this).vm) +
-                    (0.075 * (rightCell()?:this).vm) +
-                    (0.075 * (lowerRightCell()?:this).vm) +
-                    (0.075 * (upperRightCell()?:this).vm) +
-                    (0.075 * (upperLeftCell()?:this).vm) +
-                    (0.075 * (lowerLeftCell()?:this).vm)
+        charge = 0.4 * vm +
+                (upperCell().vm + lowerCell().vm + leftCell().vm +
+                rightCell().vm + lowerRightCell().vm + upperRightCell().vm +
+                upperLeftCell().vm + lowerLeftCell().vm ) * 0.075
     }
     override fun membranePotential() {
         this.vm = alphaVector[step]
