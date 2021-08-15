@@ -15,15 +15,14 @@ add_library( # Sets the name of the library.
              # Provides a relative path to your source file(s).
         src/main/cpp/TissueViewModel.cpp
         src/main/cpp/tissue.c)
-find_library( # Sets the name of the path variable.
-              log-lib
-
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+find_library( log-lib log)
+find_library( jnigraphics-lib jnigraphics)
 target_link_libraries( # Specifies the target library.
         native-lib
 
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib} )
+
+        ${log-lib}
+        ${jnigraphics-lib}
+        )

@@ -3,7 +3,9 @@
 //
 
 #include "tissue.h"
-#include <cstdlib>
+#include <stdlib.h>
+#include <string.h>
+#include <android/bitmap.h>
 
 Channel* channel[4];
 uint32_t* cellColor[4];
@@ -141,13 +143,13 @@ void FastCell_calculateCharge(Cell* cell) {
                     Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
                     Cell_lowerLeftCell(cell)->vm) * 0.075;
 }
-void DeadCell_calculateCharge(Cell* cell) { };
+void DeadCell_calculateCharge(Cell* cell) { }
 
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
     int lastTime = 0;
     double lastVm = inPairVector[0].second;
     int alphaVectorSize = 100;
-    auto* alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
+    double * alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
     alphaVector[lastTime] = lastVm; ++lastTime;
     for(const Pair* pInPair = inPairVector; pInPair->first != 0 && pInPair->second != 0.0; ++pInPair) {
         double deltaVolt = (pInPair->second - lastVm) / pInPair->first;
@@ -165,7 +167,7 @@ void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t*
     *outAlphaVector = alphaVector;
 }
 Tissue *Tissue_create(int xSize, int ySize) {
-    auto *tissue = (Tissue *) malloc(sizeof(Tissue));
+    Tissue *tissue = (Tissue *) malloc(sizeof(Tissue));
     tissue->xSize = xSize;
     tissue->ySize = ySize;
     tissue->cells = Tissue_createCells(tissue, xSize, ySize);
@@ -188,45 +190,49 @@ void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
 }
 Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
         Pair* coords) {
-    auto *_channel = (Channel *)malloc(sizeof(Channel));
+    Channel *_channel = (Channel *)malloc(sizeof(Channel));
     _channel->inactivationGateThreadhold = inactGateThreadhold;
     _channel->activationGateThreadhold = actGateThreadhold;
     buildAlphaVector(coords, &(_channel->alphaVector), &(_channel->alphaVectorSize));
     return _channel;
 }
+
 void setUp() {
-    Pair *pairs[4];
-    pairs[MYOCELL] = (Pair[]) {Pair{0, -75.0}, Pair{5, -70.0},
-                               Pair{30, 25.0}, Pair{5, 10.0}, Pair{5, 7.0}, Pair{400, 5.0},
-                               Pair{10, 4.0}, Pair{10, 3.0}, Pair{10, 2.0}, Pair{10, 0.0},
-                               Pair{10, -2.0}, Pair{10, -4.0}, Pair{10, -7.0}, Pair{10, -11.0},
-                               Pair{10, -16.0}, Pair{10, -22.0}, Pair{10, -29.0}, Pair{10, -37.0},
-                               Pair{10, -45.0}, Pair{10, -54.0}, Pair{10, -62.0}, Pair{10, -67.0},
-                               Pair{10, -71.0}, Pair{10, -74.0}, Pair{10, -75.0}, Pair{10, -75.0},
-                               Pair{10, -75.0}, Pair{10, -75.0}, Pair{10, -75.0}, Pair{400, -75.0},
-                               Pair{0, 0}};
-    pairs[AUTOCELL] = (Pair[]) {
-            Pair{0, -55}, Pair{15, -53}, Pair{15, -50}, Pair{15, -43.0},
-            Pair{15, -35}, Pair{15, -27}, Pair{15, -17}, Pair{15, -7.0},
-            Pair{15, -1}, Pair{15, 5}, Pair{15, 7}, Pair{15, 8.0},
-            Pair{15, 8}, Pair{15, 8}, Pair{15, 7}, Pair{15, 6.0},
-            Pair{15, 4}, Pair{15, 1}, Pair{15, -2}, Pair{15, -6.0},
-            Pair{15, -10}, Pair{15, -14}, Pair{15, -19}, Pair{15, -24.0},
-            Pair{15, -29}, Pair{15, -34}, Pair{15, -38}, Pair{15, -42.0},
-            Pair{15, -46}, Pair{15, -50}, Pair{15, -54}, Pair{15, -57.0},
-            Pair{15, -60}, Pair{15, -62}, Pair{15, -64},
-            Pair{15, -65}, Pair{15, -65}, Pair{10, -65}, Pair{3000, -12.0},
-            Pair{0, 0.0}};
-    pairs[FASTCELL] = (Pair[]) {Pair{0, -75.0},
-                                Pair{10, 25.0}, Pair{5, 10.0}, Pair{5, 7.0}, Pair{400, 5.0},
-                                Pair{10, 4.0}, Pair{10, 3.0}, Pair{10, 2.0}, Pair{10, 0.0},
-                                Pair{10, -2.0}, Pair{10, -4.0}, Pair{10, -7.0}, Pair{10, -11.0},
-                                Pair{10, -16.0}, Pair{10, -22.0}, Pair{10, -29.0}, Pair{10, -37.0},
-                                Pair{10, -45.0}, Pair{10, -54.0}, Pair{10, -62.0}, Pair{10, -67.0},
-                                Pair{10, -71.0}, Pair{10, -74.0}, Pair{10, -75.0}, Pair{10, -75.0},
-                                Pair{10, -75.0}, Pair{10, -75.0}, Pair{10, -75.0}, Pair{400, -75.0},
-                                Pair{0, 0.0}};
-    pairs[DEADCELL] = (Pair[]) {Pair{0, 0.0}};
+    Pair *pairs[4] = {
+        [MYOCELL] = (Pair[]) {
+            { 0, -75.0 }, { 5, -70.0 },
+            { 30, 25.0 }, { 5, 10.0 }, { 5, 7.0 }, { 400, 5.0 },
+            { 10, 4.0 }, { 10, 3.0 }, { 10, 2.0 }, { 10, 0.0 },
+            { 10, -2.0 }, { 10, -4.0 }, { 10, -7.0 }, { 10, -11.0 },
+            { 10, -16.0 }, { 10, -22.0 }, { 10, -29.0 }, { 10, -37.0 },
+            { 10, -45.0 }, { 10, -54.0 }, { 10, -62.0 }, { 10, -67.0 },
+            { 10, -71.0 }, { 10, -74.0 }, { 10, -75.0 }, { 10, -75.0 },
+            { 10, -75.0 }, { 10, -75.0 }, { 10, -75.0 }, { 400, -75.0 },
+            { 0, 0 } },
+        [AUTOCELL] = (Pair[]) {
+            { 0, -55}, {15, -53}, {15, -50}, {15, -43.0},
+            { 15, -35}, {15, -27}, {15, -17}, {15, -7.0},
+            { 15, -1}, {15, 5}, {15, 7}, {15, 8.0},
+            { 15, 8}, {15, 8}, {15, 7}, {15, 6.0},
+            { 15, 4}, {15, 1}, {15, -2}, {15, -6.0},
+            { 15, -10}, {15, -14}, {15, -19}, {15, -24.0},
+            { 15, -29}, {15, -34}, {15, -38}, {15, -42.0},
+            { 15, -46}, {15, -50}, {15, -54}, {15, -57.0},
+            { 15, -60}, {15, -62}, {15, -64},
+            { 15, -65}, {15, -65}, {10, -65}, {3000, -12.0},
+            { 0, 0.0} },
+        [FASTCELL] = (Pair[]) {
+            {0, -75.0}, {10, 25.0}, {5, 10.0}, {5, 7.0}, {400, 5.0},
+            {10, 4.0}, {10, 3.0}, {10, 2.0}, {10, 0.0},
+            {10, -2.0}, {10, -4.0}, {10, -7.0}, {10, -11.0},
+            {10, -16.0}, {10, -22.0}, {10, -29.0}, {10, -37.0},
+            {10, -45.0}, {10, -54.0}, {10, -62.0}, {10, -67.0},
+            {10, -71.0}, {10, -74.0}, {10, -75.0}, {10, -75.0},
+            {10, -75.0}, {10, -75.0}, {10, -75.0}, {400, -75.0},
+            {0, 0.0} },
+        [DEADCELL] = (Pair[]) {{0, 0.0}}
+        };
+
     for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair) {
         pPair->second = (pPair->second + 20.0) * 1.3;
     }
@@ -255,7 +261,7 @@ void setUp() {
 }
 uint32_t* createColorList(int num, ...)
 {
-    auto colors = (uint32_t *)malloc(sizeof(uint32_t));
+    uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t));
     va_list valist;
     va_start(valist, num);
     for (int i = 0; i < num; i++)
@@ -264,4 +270,38 @@ uint32_t* createColorList(int num, ...)
     }
     va_end(valist);
     return colors;
+}
+
+JNIEXPORT void JNICALL
+Java_ar_com_westsoft_joyschool_electrictissuesimulator_MainActivity_00024Companion_nativeInit(
+        JNIEnv *env, jobject thiz) {
+    setUp();
+}
+
+JNIEXPORT void JNICALL
+Java_ar_com_westsoft_joyschool_electrictissuesimulator_TissueView_printBitmap(JNIEnv *env,
+                                                                             jobject thiz,
+                                                                             jobject jBitmap) {
+    AndroidBitmapInfo androidBitmapInfo ;
+    void* pixels;
+    AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);
+    AndroidBitmap_lockPixels(env, jBitmap, &pixels);
+    unsigned char* pixelsChar = (unsigned char*) pixels;
+
+    Bitmap_fill(pixels, &androidBitmapInfo, 0x20304050);
+
+    AndroidBitmap_unlockPixels(env, jBitmap);
+}
+
+void Bitmap_fill(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color) {
+
+    uint32_t height = androidBitmapInfo->height;
+    uint32_t width = androidBitmapInfo->width;
+    uint32_t stride = androidBitmapInfo->stride;
+    uint32_t format = androidBitmapInfo->format;
+    if (format != ANDROID_BITMAP_FORMAT_RGBA_8888) return;
+    uint32_t flag = androidBitmapInfo->format; // didn't used it
+
+    memset(pixels, color, height * width);
+
 }

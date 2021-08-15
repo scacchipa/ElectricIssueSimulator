@@ -5,14 +5,16 @@
 #ifndef ELECTRICISSUESIMULATOR_TISSUE_H
 #define ELECTRICISSUESIMULATOR_TISSUE_H
 
+#include <stddef.h>
 #include <jni.h>
+#include <android/bitmap.h>
 
-enum ChannelState
+typedef enum ChannelState
 {
     RESTING = 0,
     OPEN = 1,
     INACTIVE = 2
-};
+} ChannelState;
 enum CellType {
     MYOCELL = 0,
     AUTOCELL = 1,
@@ -33,16 +35,19 @@ typedef struct Cell
     int rowPos;
     ChannelState channelState;
     Channel* channel;
-    int step = 600;
-    double vm = -70.0;
-    double charge = -70.0;
+    int step;
+    double vm;
+    double charge;
 } Cell;
-typedef struct Tissue {
+typedef struct Tissue
+{
     Cell** cells;
-    int ySize = 100;
-    int xSize = 100;
+    int ySize;
+    int xSize;
 } Tissue;
-typedef struct Pair {
+
+typedef struct Pair
+{
     int first;
     double second;
 } Pair;
@@ -75,5 +80,7 @@ Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize);
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
 uint32_t* createColorList(int num,...);
 void setUp();
+
+void Bitmap_fill(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color);
 
 #endif //ELECTRICISSUESIMULATOR_TISSUE_H

@@ -8,9 +8,7 @@ class TissueViewModel: ViewModel {
     val ySize: Int
     val tissue: Array<Array<Cell>>
     val mutex = Mutex()
-    init {
-        System.loadLibrary("native-lib")
-    }
+
     constructor(xSize: Int, ySize: Int): super() {
         this.xSize = xSize
         this.ySize = xSize
@@ -33,7 +31,7 @@ class TissueViewModel: ViewModel {
     }
     fun clone() = TissueViewModel(xSize, ySize, tissue.clone())
 
-    external fun calcAll(): Array<Array<Cell>>
+    external fun calcAll()
 //    {
 //        forAll { it.membranePotential() }
 //        forAll { it.calculateCharge() }

@@ -9,8 +9,10 @@ import kotlinx.coroutines.newSingleThreadContext
 
 class MainActivity : AppCompatActivity() {
     companion object {
+        private external fun nativeInit()
         init {
             System.loadLibrary("native-lib");
+            nativeInit()
         }
     }
     var tissueViewModel = TissueViewModel(100,100)
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.Main).launch {
             var tempo = 0f
-            val mainJob = launch(mainContext) {
+            launch(mainContext) {
                 var cloneTimeAcc = 0
                 var calcTimeAcc = 0
                 var times = 0

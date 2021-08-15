@@ -1,8 +1,10 @@
 package ar.com.westsoft.joyschool.electrictissuesimulator
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -15,10 +17,15 @@ class TissueView: View {
     var callback: MainActivity? = null
     val paint = Paint()
 
+    val w = 300
+    val h = 300
+    val conf = Bitmap.Config.ARGB_8888 // see other conf types
+    val bmp = Bitmap.createBitmap(w, h, conf) // this creates a MUTABLE bitmap
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
-
+    private external fun printBitmap(jBitmap: Bitmap)
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)
         when (event!!.action) {
@@ -42,6 +49,7 @@ class TissueView: View {
     }
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+
         for (x in 0 until tissueViewModel!!.xSize) {
             for (y in 0 until tissueViewModel!!.ySize) {
                 paint.color = tissueViewModel!!.getCell(x, y).stateColor()
@@ -50,5 +58,7 @@ class TissueView: View {
                         paint)
             }
         }
+        printBitmap(bmp)
+        canvas?.drawBitmap(bmp, 0f, 0f, paint)
     }
 }
