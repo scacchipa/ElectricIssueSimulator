@@ -81,6 +81,15 @@ void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
 uint32_t* createColorList(int num,...);
 void setUp();
 
-void Bitmap_fill(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color);
-
+void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color);
+int sign(int x);
+void Bitmap_drawPoint(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t x,
+                      uint32_t y, uint32_t color);
+void Bitmap_drawLine(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                     uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color);
+void Bitmap_drawBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                    uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color);
+void Bitmap_drawPaintedBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                           uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
+                           uint32_t innterColor);
 #endif //ELECTRICISSUESIMULATOR_TISSUE_H

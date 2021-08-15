@@ -17,8 +17,8 @@ class TissueView: View {
     var callback: MainActivity? = null
     val paint = Paint()
 
-    val w = 300
-    val h = 300
+    val w = 100
+    val h = 100
     val conf = Bitmap.Config.ARGB_8888 // see other conf types
     val bmp = Bitmap.createBitmap(w, h, conf) // this creates a MUTABLE bitmap
 
@@ -59,6 +59,6 @@ class TissueView: View {
             }
         }
         printBitmap(bmp)
-        canvas?.drawBitmap(bmp, 0f, 0f, paint)
+        canvas?.drawBitmap(bmp, 20f, 20f, paint)
     }
 }

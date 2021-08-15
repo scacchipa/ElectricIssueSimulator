@@ -5,7 +5,9 @@
 #include "tissue.h"
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <android/bitmap.h>
+#include <android/log.h>
 
 Channel* channel[4];
 uint32_t* cellColor[4];
@@ -288,20 +290,77 @@ Java_ar_com_westsoft_joyschool_electrictissuesimulator_TissueView_printBitmap(JN
     AndroidBitmap_lockPixels(env, jBitmap, &pixels);
     unsigned char* pixelsChar = (unsigned char*) pixels;
 
-    Bitmap_fill(pixels, &androidBitmapInfo, 0x20304050);
+    Bitmap_fillAll(pixels, &androidBitmapInfo, 0x203040FF);
+//    for (uint32_t x = 10; x < 20; ++x)
+//        for (uint32_t y = 10; y < 20; ++y)
+//            Bitmap_drawPoint(pixels, &androidBitmapInfo, x, y, 0x908070FF);
+    for (uint32_t x = 10; x < 20; ++x)
+        for (uint32_t y = 10; y < 20; ++y)
+            Bitmap_drawLine(pixels, &androidBitmapInfo,60, 80, x, y, 0xFF908070);
+//    Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, 20, 19, 50, 50, 0xFF888888);
+    Bitmap_drawBox(pixels, &androidBitmapInfo, 20, 20, 60, 60, 0xFF000000);
 
     AndroidBitmap_unlockPixels(env, jBitmap);
+
+
 }
 
-void Bitmap_fill(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color) {
+void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color)
+{
+    uint32_t * pPoint = pixels;
+    uint32_t pixelCount = androidBitmapInfo->width * androidBitmapInfo->height;
+    for(uint32_t idx = 0; idx < pixelCount; ++idx)
+        *(pPoint++) = color;
 
-    uint32_t height = androidBitmapInfo->height;
-    uint32_t width = androidBitmapInfo->width;
-    uint32_t stride = androidBitmapInfo->stride;
-    uint32_t format = androidBitmapInfo->format;
-    if (format != ANDROID_BITMAP_FORMAT_RGBA_8888) return;
-    uint32_t flag = androidBitmapInfo->format; // didn't used it
-
-    memset(pixels, color, height * width);
-
+}
+int sign(int x)
+{
+    return (x > 0) - (x < 0);
+}
+void Bitmap_drawPoint(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t x,
+                      uint32_t y, uint32_t color)
+{
+    *(uint32_t *)(pixels + sizeof (uint32_t) * x + y * androidBitmapInfo->stride) = color;
+}
+void Bitmap_drawLine(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                     uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color)
+ {
+    int32_t xDelta = x2 - x1;
+    int32_t yDelta = y2 - y1;
+    if (abs(xDelta) > abs(yDelta)) {
+        int xStep = sign(xDelta);
+        double yStep = (double)yDelta / (double)abs(xDelta);
+        double yPos = y1;
+        for (uint32_t xPos = x1; xPos != x2; xPos += xStep) {
+            Bitmap_drawPoint(pixels, androidBitmapInfo, xPos, yPos, color);
+            yPos += yStep;
+        }
+    } else {
+        int yStep = sign(yDelta);
+        double xStep = (double)xDelta / (double)abs(yDelta);
+        double xPos = x1;
+        for (uint32_t yPos = y1; yPos != y2; yPos += yStep) {
+            Bitmap_drawPoint(pixels, androidBitmapInfo, xPos, yPos, color);
+            xPos += xStep;
+        }
+    }
+}
+void Bitmap_drawBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                    uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color) {
+    Bitmap_drawLine(pixels, androidBitmapInfo, x1, y1, x2, y1, color);
+    Bitmap_drawLine(pixels, androidBitmapInfo, x2, y1, x2, y2, color);
+    Bitmap_drawLine(pixels, androidBitmapInfo, x2, y2, x1, y2, color);
+    Bitmap_drawLine(pixels, androidBitmapInfo, x1, y2, x1, y1, color);
+}
+void Bitmap_drawPaintedBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
+                           uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
+                           uint32_t innterColor) {
+    uint32_t * pRow = pixels + androidBitmapInfo->stride * y1 + sizeof(uint32_t) * x1;
+    for(uint32_t y = y1; y <= y2; ++y)
+    {
+        uint32_t* pPoint = pRow;
+        for(uint32_t x = x1; x <= x2; ++x)
+            *(pPoint++) = innterColor;
+        pRow += androidBitmapInfo->width;
+    };
 }
