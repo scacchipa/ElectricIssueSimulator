@@ -10,7 +10,7 @@
 #include <android/log.h>
 
 Channel* channel[4];
-uint32_t* cellColor[4];
+uint32_t* cellColors[4];
 void(*calcChargeFunctions[4])(Cell*);
 
 void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
@@ -67,7 +67,18 @@ void Cell_channelUpdate(Cell* cell)
     if (cell->step < cell->channel->alphaVectorSize - 1)
         ++cell->step;
 }
-
+uint32_t* Cell_createColorList(int num, ...)
+{
+    uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t));
+    va_list valist;
+    va_start(valist, num);
+    for (int i = 0; i < num; i++)
+    {
+        colors[i] = va_arg(valist, uint32_t);
+    }
+    va_end(valist);
+    return colors;
+}
 Cell* Cell_upperCell(Cell* cell)
 {
     if (cell->rowPos > 0)
@@ -176,7 +187,12 @@ Tissue *Tissue_create(int xSize, int ySize) {
 
     return tissue;
 }
-Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize) {
+void Tissue_destroy(Tissue *tissue) {
+    Tissue_destroyCells(tissue->cells);
+    free(tissue);
+}
+Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize)
+{
     Cell **cells = (Cell **) malloc(xSize * ySize * sizeof(Cell));
 
     for (int idx = 0; idx < xSize; ++idx)
@@ -184,7 +200,10 @@ Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize) {
             MyoCell_create(&cells[idx][idy], tissue, idx, idy);
     return cells;
 }
-
+void Tissue_destroyCells(Cell **cells)
+{
+    free(cells);
+}
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
     for (int idx = 0; idx < tissue->xSize; ++idx)
         for (int idy = 0; idy < tissue->ySize; ++idy)
@@ -199,91 +218,9 @@ Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
     return _channel;
 }
 
-void setUp() {
-    Pair *pairs[4] = {
-        [MYOCELL] = (Pair[]) {
-            { 0, -75.0 }, { 5, -70.0 },
-            { 30, 25.0 }, { 5, 10.0 }, { 5, 7.0 }, { 400, 5.0 },
-            { 10, 4.0 }, { 10, 3.0 }, { 10, 2.0 }, { 10, 0.0 },
-            { 10, -2.0 }, { 10, -4.0 }, { 10, -7.0 }, { 10, -11.0 },
-            { 10, -16.0 }, { 10, -22.0 }, { 10, -29.0 }, { 10, -37.0 },
-            { 10, -45.0 }, { 10, -54.0 }, { 10, -62.0 }, { 10, -67.0 },
-            { 10, -71.0 }, { 10, -74.0 }, { 10, -75.0 }, { 10, -75.0 },
-            { 10, -75.0 }, { 10, -75.0 }, { 10, -75.0 }, { 400, -75.0 },
-            { 0, 0 } },
-        [AUTOCELL] = (Pair[]) {
-            { 0, -55}, {15, -53}, {15, -50}, {15, -43.0},
-            { 15, -35}, {15, -27}, {15, -17}, {15, -7.0},
-            { 15, -1}, {15, 5}, {15, 7}, {15, 8.0},
-            { 15, 8}, {15, 8}, {15, 7}, {15, 6.0},
-            { 15, 4}, {15, 1}, {15, -2}, {15, -6.0},
-            { 15, -10}, {15, -14}, {15, -19}, {15, -24.0},
-            { 15, -29}, {15, -34}, {15, -38}, {15, -42.0},
-            { 15, -46}, {15, -50}, {15, -54}, {15, -57.0},
-            { 15, -60}, {15, -62}, {15, -64},
-            { 15, -65}, {15, -65}, {10, -65}, {3000, -12.0},
-            { 0, 0.0} },
-        [FASTCELL] = (Pair[]) {
-            {0, -75.0}, {10, 25.0}, {5, 10.0}, {5, 7.0}, {400, 5.0},
-            {10, 4.0}, {10, 3.0}, {10, 2.0}, {10, 0.0},
-            {10, -2.0}, {10, -4.0}, {10, -7.0}, {10, -11.0},
-            {10, -16.0}, {10, -22.0}, {10, -29.0}, {10, -37.0},
-            {10, -45.0}, {10, -54.0}, {10, -62.0}, {10, -67.0},
-            {10, -71.0}, {10, -74.0}, {10, -75.0}, {10, -75.0},
-            {10, -75.0}, {10, -75.0}, {10, -75.0}, {400, -75.0},
-            {0, 0.0} },
-        [DEADCELL] = (Pair[]) {{0, 0.0}}
-        };
-
-    for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair) {
-        pPair->second = (pPair->second + 20.0) * 1.3;
-    }
-    for (Pair *pPair = pairs[AUTOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair) {
-        pPair->second = (pPair->second + 10.0) * 1.3;
-    }
-    for (Pair *pPair = pairs[FASTCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair) {
-        pPair->second = (pPair->second + 20.0) * 1.3;
-    }
-    channel[MYOCELL] = Channel_create(-55, 0, pairs[MYOCELL]);
-    channel[AUTOCELL] = Channel_create(-45, 0, pairs[AUTOCELL]);
-    channel[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL]);
-    channel[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL]);
-
-    cellColor[MYOCELL] = createColorList( 3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546 );
-    cellColor[AUTOCELL] = createColorList( 3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546 );
-    cellColor[DEADCELL] = createColorList( 3, 0xFF000000 );
-    cellColor[FASTCELL] = createColorList( 3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546 );
-
-
-    calcChargeFunctions[MYOCELL] = MyoCell_calculateCharge;
-    calcChargeFunctions[AUTOCELL] = AutoCell_calculateCharge;
-    calcChargeFunctions[FASTCELL] = FastCell_calculateCharge;
-    calcChargeFunctions[DEADCELL] = DeadCell_calculateCharge;
-
-}
-uint32_t* createColorList(int num, ...)
-{
-    uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t));
-    va_list valist;
-    va_start(valist, num);
-    for (int i = 0; i < num; i++)
-    {
-        colors[i] = va_arg(valist, uint32_t);
-    }
-    va_end(valist);
-    return colors;
-}
-
 JNIEXPORT void JNICALL
-Java_ar_com_westsoft_joyschool_electrictissuesimulator_MainActivity_00024Companion_nativeInit(
-        JNIEnv *env, jobject thiz) {
-    setUp();
-}
-
-JNIEXPORT void JNICALL
-Java_ar_com_westsoft_joyschool_electrictissuesimulator_TissueView_printBitmap(JNIEnv *env,
-                                                                             jobject thiz,
-                                                                             jobject jBitmap) {
+Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
+                                                                             jobject thiz,jobject jBitmap) {
     AndroidBitmapInfo androidBitmapInfo ;
     void* pixels;
     AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);

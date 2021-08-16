@@ -1,4 +1,4 @@
-package ar.com.westsoft.joyschool.electrictissuesimulator
+package ar.com.westsoft.hearttissue
 
 import android.content.Context
 import android.graphics.Canvas

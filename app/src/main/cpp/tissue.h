@@ -15,12 +15,12 @@ typedef enum ChannelState
     OPEN = 1,
     INACTIVE = 2
 } ChannelState;
-enum CellType {
+typedef enum CellType {
     MYOCELL = 0,
     AUTOCELL = 1,
     FASTCELL = 2,
     DEADCELL = 3
-};
+} CellType;
 typedef struct Channel
 {
     double inactivationGateThreadhold;
@@ -33,6 +33,7 @@ typedef struct Cell
     struct Tissue* tissue;
     int colPos;
     int rowPos;
+    CellType cellType;
     ChannelState channelState;
     Channel* channel;
     int step;
@@ -59,6 +60,7 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
 
 void Cell_membranePotential(Cell* cell);
 void Cell_channelUpdate(Cell* cell);
+uint32_t* Cell_createColorList(int num, ...);
 
 Cell* Cell_upperCell(Cell* cell);
 Cell* Cell_lowerCell(Cell* cell);
@@ -72,14 +74,17 @@ void MyoCell_calculateCharge(Cell* cell);
 void AutoCell_calculateCharge(Cell* cell);
 void FastCell_calculateCharge(Cell* cell);
 void DeadCell_calculateCharge(Cell* cell);
+Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
+                        Pair* coords);
 
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize);
 
 Tissue *Tissue_create(int xSize, int ySize);
+void Tissue_destroy(Tissue *tissue);
 Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize);
+void Tissue_destroyCells(Cell **cells);
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
-uint32_t* createColorList(int num,...);
-void setUp();
+
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color);
 int sign(int x);

@@ -1,4 +1,4 @@
-package ar.com.westsoft.joyschool.electrictissuesimulator
+package ar.com.westsoft.hearttissue
 
 import android.content.Context
 import android.util.AttributeSet
@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.RadioButton
+import ar.com.westsoft.joyschool.electrictissuesimulator.R
 
 class PanelView: LinearLayout {
 

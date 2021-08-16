@@ -1,7 +1,8 @@
-package ar.com.westsoft.joyschool.electrictissuesimulator
+package ar.com.westsoft.hearttissue
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import ar.com.westsoft.joyschool.electrictissuesimulator.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,16 +43,14 @@ class MainActivity : AppCompatActivity() {
                 while (true) {
 
                     val startTime = System.currentTimeMillis()
-                    val tempTissue = tissueView.tissueViewModel!!.clone()
-                    val cloneTime = System.currentTimeMillis()
-                    tempTissue.calcAll()
+
+                    tissueViewModel.calcAll()
+
                     val calcTime = System.currentTimeMillis()
-                    cloneTimeAcc += (cloneTime - startTime).toInt()
-                    calcTimeAcc += (calcTime - cloneTime).toInt()
+                    calcTimeAcc += (startTime - calcTime).toInt()
                     times++
                     println("Clone time:${cloneTimeAcc / times} Calc Time:${calcTimeAcc / times}")
 
-                    tissueView.tissueViewModel = tempTissue
 
                     val cell = tissueView.tissueViewModel!!.getCell(10, 10)
                     coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
@@ -67,14 +66,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun onClickOnCell(x: Int, y: Int) {
-        println("$x, $y")
-        val newCell: Cell = when {
-                    buttonPanel.autoButton.isChecked -> AutoCell(tissueViewModel, x, y)
-                    buttonPanel.myoButton.isChecked -> MyoCell(tissueViewModel, x, y)
-                    buttonPanel.fastButton.isChecked -> FastCell(tissueViewModel, x, y)
-                    else -> DeadCell(tissueViewModel, x, y)
-                }
-        tissueViewModel.setCell(x, y, newCell)
+        when {
+            buttonPanel.autoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.AUTOCELL), x, y)
+            buttonPanel.myoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.MYOCELL), x, y)
+            buttonPanel.fastButton.isChecked -> tissueViewModel.setCell(Cell(CellType.FASTCELL), x, y)
+            else -> tissueViewModel.setCell(Cell(CellType.DEADCELL), x, y)
+        }
         findViewById<TissueView>(R.id.tissueView).invalidate()
     }
 }

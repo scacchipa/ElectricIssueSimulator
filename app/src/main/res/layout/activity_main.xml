@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context="ar.com.westsoft.hearttissue.MainActivity">
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -19,7 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ar.com.westsoft.joyschool.electrictissuesimulator.TissueView
+        <ar.com.westsoft.hearttissue.TissueView
             android:id="@+id/tissueView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -38,7 +38,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/frameLayout">
 
-        <ar.com.westsoft.joyschool.electrictissuesimulator.CoordenateGraph
+        <ar.com.westsoft.hearttissue.CoordenateGraph
             android:id="@+id/coordenateGraph"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -56,7 +56,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ar.com.westsoft.joyschool.electrictissuesimulator.PanelView
+        <ar.com.westsoft.hearttissue.PanelView
             android:id="@+id/buttonPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -65,7 +65,7 @@
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">
 
-        </ar.com.westsoft.joyschool.electrictissuesimulator.PanelView>
+        </ar.com.westsoft.hearttissue.PanelView>
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
