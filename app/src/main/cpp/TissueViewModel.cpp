@@ -6,14 +6,15 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 #include "tissue.h"
+
 static int value = 0;
 static Tissue* tissue = nullptr;
 extern uint32_t* cellColors[4];
 extern void(*calcChargeFunctions[4])(Cell*);
 extern Channel* channel[4];
+
 extern "C"
 JNIEXPORT void JNICALL
-
 Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
 
 //    __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "%d\n", value);
@@ -28,15 +29,15 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_setUp(JNIEnv *env,
                                                        jint cell_row_count,
                                                        jint cell_col_count)
 {
-    if (tissue == nullptr) Tissue_destroy(tissue);
+    if (tissue != nullptr) Tissue_destroy(tissue);
     tissue = Tissue_create(cell_col_count, cell_row_count);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *env, jobject thiz) {
-    Pair *pairs[4] = {
-            [MYOCELL] = (Pair[]) {
+    Pair *pairs[4];
+    pairs[MYOCELL] = (Pair[]) {
                     { 0, -75.0 }, { 5, -70.0 },
                     { 30, 25.0 }, { 5, 10.0 }, { 5, 7.0 }, { 400, 5.0 },
                     { 10, 4.0 }, { 10, 3.0 }, { 10, 2.0 }, { 10, 0.0 },
@@ -45,8 +46,8 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
                     { 10, -45.0 }, { 10, -54.0 }, { 10, -62.0 }, { 10, -67.0 },
                     { 10, -71.0 }, { 10, -74.0 }, { 10, -75.0 }, { 10, -75.0 },
                     { 10, -75.0 }, { 10, -75.0 }, { 10, -75.0 }, { 400, -75.0 },
-                    { 0, 0 } },
-            [AUTOCELL] = (Pair[]) {
+                    { 0, 0 } };
+    pairs[AUTOCELL] = (Pair[]) {
                     { 0, -55}, {15, -53}, {15, -50}, {15, -43.0},
                     { 15, -35}, {15, -27}, {15, -17}, {15, -7.0},
                     { 15, -1}, {15, 5}, {15, 7}, {15, 8.0},
@@ -57,8 +58,8 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
                     { 15, -46}, {15, -50}, {15, -54}, {15, -57.0},
                     { 15, -60}, {15, -62}, {15, -64},
                     { 15, -65}, {15, -65}, {10, -65}, {3000, -12.0},
-                    { 0, 0.0} },
-            [FASTCELL] = (Pair[]) {
+                    { 0, 0.0} };
+    pairs[FASTCELL] = (Pair[]) {
                     {0, -75.0}, {10, 25.0}, {5, 10.0}, {5, 7.0}, {400, 5.0},
                     {10, 4.0}, {10, 3.0}, {10, 2.0}, {10, 0.0},
                     {10, -2.0}, {10, -4.0}, {10, -7.0}, {10, -11.0},
@@ -67,8 +68,7 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
                     {10, -71.0}, {10, -74.0}, {10, -75.0}, {10, -75.0},
                     {10, -75.0}, {10, -75.0}, {10, -75.0}, {400, -75.0},
                     {0, 0.0} },
-            [DEADCELL] = (Pair[]) {{0, 0.0}}
-    };
+    pairs[DEADCELL] = (Pair[]) {{0, 0.0}};
 
     for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair)
     {
@@ -122,7 +122,7 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_setCell(JNIEnv *env, jobject th
     jdouble jCellCharge = env->GetDoubleField(jCell, jCargeId);
     jint jCellStepInt = env->GetIntField(jCell, jStepId);
 
-    Cell* cell = &tissue->cells[x][y];
+    Cell* cell = GETPCELL(tissue,x,y);
     cell->tissue = tissue;
     cell->colPos = x;
     cell->rowPos = y;
@@ -145,51 +145,72 @@ extern "C"
 JNIEXPORT jobject JNICALL
 Java_ar_com_westsoft_hearttissue_TissueViewModel_getCell(JNIEnv *env, jobject thiz, jint x,
                                                          jint y) {
-    Cell* cell = &tissue->cells[x][y];
+    Cell* pCell = (Cell*)(GETPCELL(tissue, x, y));
 
     jclass jCellClass = env->FindClass("ar/com/westsoft/hearttissue/Cell");
     jmethodID jConstructorID = env->GetMethodID(jCellClass, "<init>", "(Lar/com/westsoft/hearttissue/CellType;Lar/com/westsoft/hearttissue/ChannelState;DDI)V");
 
-    jclass jCellTypeEnum = env->FindClass("ar/com/westsoft/hearttissue/CellType");
-    jmethodID jCellTypeInitMtdId = env->GetStaticMethodID(jCellTypeEnum, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
+    jclass jCellTypeClass = env->FindClass("ar/com/westsoft/hearttissue/CellType");
 
-    jstring jCellTypeName;
-    switch (cell->cellType) {
+    jfieldID jCellTypeClassId;
+    switch (pCell->cellType) {
         case MYOCELL:
-            jCellTypeName = env->NewStringUTF("MYOCELL");
+            jCellTypeClassId = env->GetStaticFieldID(jCellTypeClass, "MYOCELL", "Lar/com/westsoft/hearttissue/CellType;");
             break;
         case AUTOCELL:
-            jCellTypeName = env->NewStringUTF("AUTOCELL");
+            jCellTypeClassId = env->GetStaticFieldID(jCellTypeClass, "MYOCELL", "Lar/com/westsoft/hearttissue/CellType;");
             break;
         case FASTCELL:
-            jCellTypeName = env->NewStringUTF("FASTCELL");
+            jCellTypeClassId = env->GetStaticFieldID(jCellTypeClass, "MYOCELL", "Lar/com/westsoft/hearttissue/CellType;");
             break;
         case DEADCELL:
-            jCellTypeName = env->NewStringUTF("DEADCELL");
+            jCellTypeClassId = env->GetStaticFieldID(jCellTypeClass, "MYOCELL", "Lar/com/westsoft/hearttissue/CellType;");
             break;
     }
-    jobject jCellType = env->CallStaticObjectMethod(jCellTypeEnum, jCellTypeInitMtdId, jCellTypeEnum, jCellTypeName);
+    jobject jCellType = env->GetStaticObjectField(jCellTypeClass, jCellTypeClassId);
 
-    jclass jChannelStateEnum = env->FindClass("ar/com/westsoft/hearttissue/ChannelState");
-    jmethodID jInitMtdId = env->GetStaticMethodID(jChannelStateEnum, "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;");
-    jstring jStateName;
-    switch (cell->channelState) {
+    jclass jChannelStateClass = env->FindClass("ar/com/westsoft/hearttissue/ChannelState");
+    jfieldID jChannelStateClassId;
+    switch (pCell->channelState) {
         case RESTING:
-            jStateName = env->NewStringUTF("RESTING");
+            jChannelStateClassId = env->GetStaticFieldID(jChannelStateClass,"RESTING", "Lar/com/westsoft/hearttissue/ChannelState;");
             break;
         case OPEN:
-            jStateName = env->NewStringUTF("OPEN");
+            jChannelStateClassId = env->GetStaticFieldID(jChannelStateClass,"OPEN", "Lar/com/westsoft/hearttissue/ChannelState;");
             break;
         case INACTIVE:
-            jStateName = env->NewStringUTF("INACTIVE");
+            jChannelStateClassId = env->GetStaticFieldID(jChannelStateClass,"INACTIVE", "Lar/com/westsoft/hearttissue/ChannelState;");
             break;
     }
-    jobject jState = env->CallStaticObjectMethod(jChannelStateEnum, jInitMtdId, jChannelStateEnum, jStateName);
+    jobject jChannelState = env->GetStaticObjectField(jChannelStateClass, jChannelStateClassId);
 
-    jdouble jVmDouble = cell->vm;
-    jdouble jChargeDouble = cell->charge;
-    jint jStepInt = cell->step;
+    jdouble jVmDouble = pCell->vm;
+    jdouble jChargeDouble = pCell->charge;
+    jint jStepInt = pCell->step;
 
-    env->NewObject(jCellClass, jConstructorID, jCellType, jState,
+    return env->NewObject(jCellClass, jConstructorID, jCellType, jChannelState,
                    jVmDouble, jChargeDouble, jStepInt);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
+                                                        jobject thiz,jobject jBitmap) {
+    AndroidBitmapInfo androidBitmapInfo ;
+    void* pixels;
+    AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);
+    AndroidBitmap_lockPixels(env, jBitmap, &pixels);
+    unsigned char* pixelsChar = (unsigned char*) pixels;
+
+    Bitmap_fillAll(pixels, &androidBitmapInfo, 0x203040FF);
+//    for (uint32_t x = 10; x < 20; ++x)
+//        for (uint32_t y = 10; y < 20; ++y)
+//            Bitmap_drawPoint(pixels, &androidBitmapInfo, x, y, 0x908070FF);
+    for (uint32_t x = 10; x < 20; ++x)
+        for (uint32_t y = 10; y < 20; ++y)
+            Bitmap_drawLine(pixels, &androidBitmapInfo,60, 80, x, y, 0xFF908070);
+//    Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, 20, 19, 50, 50, 0xFF888888);
+    Bitmap_drawBox(pixels, &androidBitmapInfo, 20, 20, 60, 60, 0xFF000000);
+
+    AndroidBitmap_unlockPixels(env, jBitmap);
 }

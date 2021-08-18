@@ -3,26 +3,15 @@ project(simple_example)               # Create project "simple_example"
 set(CMAKE_CXX_STANDARD 14)            # Enable c++14 standard
 
 # Add main.cpp file of project root directory as source file
-set(SOURCE_FILES main.cpp)
 
-
-add_library( # Sets the name of the library.
-        native-lib
-
-             # Sets the library as a shared library.
-        SHARED
-
-             # Provides a relative path to your source file(s).
-        src/main/cpp/TissueViewModel.cpp
-        src/main/cpp/tissue.c)
+add_library( tissue STATIC src/main/cpp/tissue.c)
+add_library( interface STATIC src/main/cpp/TissueViewModel.cpp)
+add_library( native-lib SHARED src/main/cpp/TissueViewModel.cpp)
 find_library( log-lib log)
 find_library( jnigraphics-lib jnigraphics)
-target_link_libraries( # Specifies the target library.
-        native-lib
-
-        # Links the target library to the log library
-        # included in the NDK.
-
+target_link_libraries( native-lib
+        interface
+        tissue
         ${log-lib}
         ${jnigraphics-lib}
         )

@@ -20,6 +20,9 @@ void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->channelState = RESTING;
     cell->channel = channel[MYOCELL];
+    cell->step = 700;
+    cell->vm = -70;
+    cell->charge = -70;
 }
 void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
@@ -28,6 +31,9 @@ void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->channelState = RESTING;
     cell->channel = channel[AUTOCELL];
+    cell->step = 700;
+    cell->vm = -70;
+    cell->charge = -70;
 }
 void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
@@ -36,6 +42,9 @@ void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->channelState = RESTING;
     cell->channel = channel[FASTCELL];
+    cell->step = 700;
+    cell->vm = -70;
+    cell->charge = -70;
 }
 void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
@@ -44,6 +53,9 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->channelState = RESTING;
     cell->channel = channel[DEADCELL];
+    cell->step = 700;
+    cell->vm = -70;
+    cell->charge = -70;
 }
 void Cell_membranePotential(Cell* cell)
 {
@@ -82,56 +94,56 @@ uint32_t* Cell_createColorList(int num, ...)
 Cell* Cell_upperCell(Cell* cell)
 {
     if (cell->rowPos > 0)
-        return &(cell->tissue->cells[cell->colPos][cell->rowPos - 1]);
+        return GETPCELL(cell->tissue, cell->colPos, cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_lowerCell(Cell* cell)
 {
     if (cell->rowPos < cell->tissue->ySize - 1)
-        return &(cell->tissue->cells[cell->colPos][cell->rowPos + 1]);
+        return GETPCELL(cell->tissue, cell->colPos, cell->rowPos + 1);
     else
         return cell;
 }
 Cell* Cell_leftCell(Cell* cell)
 {
     if (cell->colPos > 0)
-        return &(cell->tissue->cells[cell->colPos - 1][cell->rowPos]);
+        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos);
     else
         return cell;
 }
 Cell* Cell_rightCell(Cell* cell)
 {
     if (cell->colPos < cell->tissue->xSize - 1)
-        return &(cell->tissue->cells[cell->colPos + 1][cell->rowPos]);
+        return GETPCELL(cell->tissue,cell->colPos + 1, cell->rowPos);
     else
         return cell;
 }
 Cell* Cell_lowerRightCell(Cell* cell)
 {
     if (cell->colPos < cell->tissue->xSize - 1 && cell->rowPos < cell->tissue->ySize - 1)
-        return &(cell->tissue->cells[cell->colPos + 1][cell->rowPos + 1]);
+        return GETPCELL(cell->tissue,cell->colPos + 1,cell->rowPos + 1);
     else
         return cell;
 }
 Cell* Cell_upperRightCell(Cell* cell)
 {
     if (cell->colPos < cell->tissue->xSize - 1 && cell->rowPos > 0)
-        return &(cell->tissue->cells[cell->colPos + 1][cell->rowPos - 1]);
+        return GETPCELL(cell->tissue,cell->colPos + 1,cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_upperLeftCell(Cell* cell)
 {
     if (cell->colPos > 0 && cell->rowPos > 0)
-        return &(cell->tissue->cells[cell->colPos - 1][cell->rowPos - 1]);
+        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_lowerLeftCell(Cell* cell)
 {
     if (cell->colPos > 0 && cell->rowPos < cell->tissue->ySize - 1)
-        return &(cell->tissue->cells[cell->colPos - 1][cell->rowPos + 1]);
+        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos + 1);
     else
         return cell;
 }
@@ -156,7 +168,8 @@ void FastCell_calculateCharge(Cell* cell) {
                     Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
                     Cell_lowerLeftCell(cell)->vm) * 0.075;
 }
-void DeadCell_calculateCharge(Cell* cell) { }
+void DeadCell_calculateCharge(Cell* cell) { ;
+}
 
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
     int lastTime = 0;
@@ -191,56 +204,36 @@ void Tissue_destroy(Tissue *tissue) {
     Tissue_destroyCells(tissue->cells);
     free(tissue);
 }
-Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize)
+Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize)
 {
-    Cell **cells = (Cell **) malloc(xSize * ySize * sizeof(Cell));
-
-    for (int idx = 0; idx < xSize; ++idx)
-        for (int idy = 0; idy < ySize; ++idy)
-            MyoCell_create(&cells[idx][idy], tissue, idx, idy);
-    return cells;
+    Cell *cells = malloc(xSize * ySize * sizeof(Cell));
+    for (int idx = 0; idx < ySize; ++idx)
+        for (int idy = 0; idy < ySize; ++idy) {
+            __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "%d %d %p\n",
+                                idx, idy, cells + ySize * idy + idx);
+            MyoCell_create(cells + ySize * idy + idx, tissue, idx, idy);
+        }
+    return (Cell*) cells;
 }
-void Tissue_destroyCells(Cell **cells)
+void Tissue_destroyCells(Cell *cells)
 {
     free(cells);
 }
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
     for (int idx = 0; idx < tissue->xSize; ++idx)
         for (int idy = 0; idy < tissue->ySize; ++idy)
-            func(&(tissue->cells[idx][idy]));
+            func(GETPCELL(tissue,idx,idy));
 }
-Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
-        Pair* coords) {
-    Channel *_channel = (Channel *)malloc(sizeof(Channel));
+Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
+                        Pair *coords) {
+    Channel *_channel = (Channel *) malloc(sizeof(Channel));
     _channel->inactivationGateThreadhold = inactGateThreadhold;
     _channel->activationGateThreadhold = actGateThreadhold;
     buildAlphaVector(coords, &(_channel->alphaVector), &(_channel->alphaVectorSize));
     return _channel;
 }
 
-JNIEXPORT void JNICALL
-Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
-                                                                             jobject thiz,jobject jBitmap) {
-    AndroidBitmapInfo androidBitmapInfo ;
-    void* pixels;
-    AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);
-    AndroidBitmap_lockPixels(env, jBitmap, &pixels);
-    unsigned char* pixelsChar = (unsigned char*) pixels;
 
-    Bitmap_fillAll(pixels, &androidBitmapInfo, 0x203040FF);
-//    for (uint32_t x = 10; x < 20; ++x)
-//        for (uint32_t y = 10; y < 20; ++y)
-//            Bitmap_drawPoint(pixels, &androidBitmapInfo, x, y, 0x908070FF);
-    for (uint32_t x = 10; x < 20; ++x)
-        for (uint32_t y = 10; y < 20; ++y)
-            Bitmap_drawLine(pixels, &androidBitmapInfo,60, 80, x, y, 0xFF908070);
-//    Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, 20, 19, 50, 50, 0xFF888888);
-    Bitmap_drawBox(pixels, &androidBitmapInfo, 20, 20, 60, 60, 0xFF000000);
-
-    AndroidBitmap_unlockPixels(env, jBitmap);
-
-
-}
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color)
 {

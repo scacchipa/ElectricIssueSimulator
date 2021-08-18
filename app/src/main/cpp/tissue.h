@@ -5,9 +5,15 @@
 #ifndef ELECTRICISSUESIMULATOR_TISSUE_H
 #define ELECTRICISSUESIMULATOR_TISSUE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <jni.h>
 #include <android/bitmap.h>
+
+#define GETPCELL(tissue, x, y) tissue->cells + tissue->ySize * y + x
 
 typedef enum ChannelState
 {
@@ -42,7 +48,7 @@ typedef struct Cell
 } Cell;
 typedef struct Tissue
 {
-    Cell** cells;
+    Cell* cells;
     int ySize;
     int xSize;
 } Tissue;
@@ -81,8 +87,8 @@ void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t*
 
 Tissue *Tissue_create(int xSize, int ySize);
 void Tissue_destroy(Tissue *tissue);
-Cell** Tissue_createCells(Tissue* tissue, int xSize, int ySize);
-void Tissue_destroyCells(Cell **cells);
+Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize);
+void Tissue_destroyCells(Cell *cells);
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
 
 
@@ -97,4 +103,9 @@ void Bitmap_drawBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
 void Bitmap_drawPaintedBox(void* pixels, AndroidBitmapInfo* androidBitmapInfo,
                            uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
                            uint32_t innterColor);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif //ELECTRICISSUESIMULATOR_TISSUE_H
