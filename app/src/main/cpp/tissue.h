@@ -66,7 +66,10 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
 
 void Cell_membranePotential(Cell* cell);
 void Cell_channelUpdate(Cell* cell);
-uint32_t* Cell_createColorList(int num, ...);
+uint32_t* Cell_loadColorList(int num, ...);
+Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
+                        Pair* coords);
+void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize);
 
 Cell* Cell_upperCell(Cell* cell);
 Cell* Cell_lowerCell(Cell* cell);
@@ -76,19 +79,18 @@ Cell* Cell_lowerRightCell(Cell* cell);
 Cell* Cell_upperRightCell(Cell* cell);
 Cell* Cell_upperLeftCell(Cell* cell);
 Cell* Cell_lowerLeftCell(Cell* cell);
+
+void Cell_calculateCharge(Cell* cell);
 void MyoCell_calculateCharge(Cell* cell);
 void AutoCell_calculateCharge(Cell* cell);
 void FastCell_calculateCharge(Cell* cell);
 void DeadCell_calculateCharge(Cell* cell);
-Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
-                        Pair* coords);
-
-void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize);
 
 Tissue *Tissue_create(int xSize, int ySize);
 void Tissue_destroy(Tissue *tissue);
 Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize);
 void Tissue_destroyCells(Cell *cells);
+void Tissue_calcAll(Tissue* tissue) ;
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
 
 

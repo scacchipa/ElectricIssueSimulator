@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
                     times++
                     println("Clone time:${cloneTimeAcc / times} Calc Time:${calcTimeAcc / times}")
 
-
                     val cell = tissueView.tissueViewModel!!.getCell(10, 10)
                     coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
                     tempo++

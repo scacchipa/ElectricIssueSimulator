@@ -79,7 +79,40 @@ void Cell_channelUpdate(Cell* cell)
     if (cell->step < cell->channel->alphaVectorSize - 1)
         ++cell->step;
 }
-uint32_t* Cell_createColorList(int num, ...)
+Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
+                        Pair *coords)
+{
+    Channel *_channel = (Channel *) malloc(sizeof(Channel));
+    _channel->inactivationGateThreadhold = inactGateThreadhold;
+    _channel->activationGateThreadhold = actGateThreadhold;
+    buildAlphaVector(coords, &(_channel->alphaVector), &(_channel->alphaVectorSize));
+    return _channel;
+}
+void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
+
+    size_t lastTime = 0;
+    double lastVm = inPairVector[0].second;
+    int alphaVectorSize = 100;
+    double * alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
+    alphaVector[lastTime] = lastVm; ++lastTime;
+    for(const Pair* pInPair = inPairVector; pInPair->first != 0 && pInPair->second != 0.0; ++pInPair) {
+        double deltaVolt = (pInPair->second - lastVm) / pInPair->first;
+        for (int time = 0; time < pInPair->first; ++time) {
+            lastVm += deltaVolt;
+            alphaVector[lastTime] = lastVm;
+            ++lastTime;
+            if (alphaVectorSize < lastTime + time) {
+                alphaVectorSize += 100;
+                alphaVector = (double *)realloc(alphaVector, alphaVectorSize);
+            }
+        }
+    }
+    alphaVector = (double *)realloc(alphaVector, lastTime);
+    *outAlphaVector = alphaVector;
+    *outAlphaSize = lastTime;
+}
+
+uint32_t* Cell_loadColorList(int num, ...)
 {
     uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t));
     va_list valist;
@@ -91,6 +124,7 @@ uint32_t* Cell_createColorList(int num, ...)
     va_end(valist);
     return colors;
 }
+
 Cell* Cell_upperCell(Cell* cell)
 {
     if (cell->rowPos > 0)
@@ -147,6 +181,10 @@ Cell* Cell_lowerLeftCell(Cell* cell)
     else
         return cell;
 }
+
+void Cell_calculateCharge(Cell* cell) {
+    calcChargeFunctions[cell->cellType](cell);
+}
 void MyoCell_calculateCharge(Cell* cell) {
     cell->charge = 0.4 * cell->vm +
                    (Cell_upperCell(cell)->vm + Cell_lowerCell(cell)->vm + Cell_leftCell(cell)->vm +
@@ -168,30 +206,7 @@ void FastCell_calculateCharge(Cell* cell) {
                     Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
                     Cell_lowerLeftCell(cell)->vm) * 0.075;
 }
-void DeadCell_calculateCharge(Cell* cell) { ;
-}
-
-void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
-    int lastTime = 0;
-    double lastVm = inPairVector[0].second;
-    int alphaVectorSize = 100;
-    double * alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
-    alphaVector[lastTime] = lastVm; ++lastTime;
-    for(const Pair* pInPair = inPairVector; pInPair->first != 0 && pInPair->second != 0.0; ++pInPair) {
-        double deltaVolt = (pInPair->second - lastVm) / pInPair->first;
-        for (int time = 0; time < pInPair->first; ++time) {
-            lastVm += deltaVolt;
-            alphaVector[lastTime] = lastVm;
-            ++lastTime;
-            if (alphaVectorSize < lastTime + time) {
-                alphaVectorSize += 100;
-                alphaVector = (double *)realloc(alphaVector, alphaVectorSize);
-            }
-        }
-    }
-    alphaVector = (double *)realloc(alphaVector, lastTime);
-    *outAlphaVector = alphaVector;
-}
+void DeadCell_calculateCharge(Cell* cell) { }
 Tissue *Tissue_create(int xSize, int ySize) {
     Tissue *tissue = (Tissue *) malloc(sizeof(Tissue));
     tissue->xSize = xSize;
@@ -219,18 +234,15 @@ void Tissue_destroyCells(Cell *cells)
 {
     free(cells);
 }
+void Tissue_calcAll(Tissue* tissue) {
+    Tissue_forAllCells(tissue, Cell_membranePotential);
+    Tissue_forAllCells(tissue, Cell_calculateCharge);
+    Tissue_forAllCells(tissue, Cell_channelUpdate);
+}
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
     for (int idx = 0; idx < tissue->xSize; ++idx)
         for (int idy = 0; idy < tissue->ySize; ++idy)
             func(GETPCELL(tissue,idx,idy));
-}
-Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
-                        Pair *coords) {
-    Channel *_channel = (Channel *) malloc(sizeof(Channel));
-    _channel->inactivationGateThreadhold = inactGateThreadhold;
-    _channel->activationGateThreadhold = actGateThreadhold;
-    buildAlphaVector(coords, &(_channel->alphaVector), &(_channel->alphaVectorSize));
-    return _channel;
 }
 
 

@@ -16,10 +16,7 @@ extern Channel* channel[4];
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
-
-//    __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "%d\n", value);
-    value++;
-
+    Tissue_calcAll(tissue);
 }
 
 extern "C"
@@ -87,10 +84,10 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
     channel[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL]);
     channel[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL]);
 
-    cellColors[MYOCELL] = Cell_createColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
-    cellColors[AUTOCELL] = Cell_createColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546);
-    cellColors[DEADCELL] = Cell_createColorList(3, 0xFF000000);
-    cellColors[FASTCELL] = Cell_createColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
+    cellColors[MYOCELL] = Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
+    cellColors[AUTOCELL] = Cell_loadColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546);
+    cellColors[DEADCELL] = Cell_loadColorList(3, 0xFF000000);
+    cellColors[FASTCELL] = Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
 
     calcChargeFunctions[MYOCELL] = MyoCell_calculateCharge;
     calcChargeFunctions[AUTOCELL] = AutoCell_calculateCharge;
