@@ -240,12 +240,12 @@ void Tissue_calcAll(Tissue* tissue) {
     Tissue_forAllCells(tissue, Cell_channelUpdate);
 }
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
-    for (int idx = 0; idx < tissue->xSize; ++idx)
-        for (int idy = 0; idy < tissue->ySize; ++idy)
-            func(GETPCELL(tissue,idx,idy));
+    int length = tissue->xSize * tissue->ySize;
+    Cell* cell = tissue->cells;
+    for (int idx = 0; idx < length; ++idx) {
+        func(cell++);
+    }
 }
-
-
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color)
 {
@@ -253,7 +253,6 @@ void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t
     uint32_t pixelCount = androidBitmapInfo->width * androidBitmapInfo->height;
     for(uint32_t idx = 0; idx < pixelCount; ++idx)
         *(pPoint++) = color;
-
 }
 int sign(int x)
 {

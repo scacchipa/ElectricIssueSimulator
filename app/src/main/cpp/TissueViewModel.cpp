@@ -5,6 +5,7 @@
 #include "TissueViewModel.h"
 #include <android/log.h>
 #include <android/bitmap.h>
+#include <time.h>
 #include "tissue.h"
 
 static int value = 0;
@@ -16,7 +17,17 @@ extern Channel* channel[4];
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
+    time_t now, later;
+    time(&later);
+
     Tissue_calcAll(tissue);
+
+    double seconds;
+    time(&now);
+    seconds = difftime(later, now);
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "CalcAll","Calc Mean Time: %d", 4);
+
 }
 
 extern "C"

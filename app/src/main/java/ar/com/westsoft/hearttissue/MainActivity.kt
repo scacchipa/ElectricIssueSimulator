@@ -37,19 +37,18 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             var tempo = 0f
             launch(mainContext) {
-                var cloneTimeAcc = 0
-                var calcTimeAcc = 0
-                var times = 0
+//                var calcTimeAcc:Long = 0
+//                var times = 0
                 while (true) {
 
-                    val startTime = System.currentTimeMillis()
+//                    val startTime = System.nanoTime()
 
                     tissueViewModel.calcAll()
 
-                    val calcTime = System.currentTimeMillis()
-                    calcTimeAcc += (startTime - calcTime).toInt()
-                    times++
-                    println("Clone time:${cloneTimeAcc / times} Calc Time:${calcTimeAcc / times}")
+//                    val calcTime = System.nanoTime()
+//                    calcTimeAcc += calcTime - startTime
+//                    times++
+//                    println("Calc time: $calcTime; Mean Calc Time:${calcTimeAcc / times}")
 
                     val cell = tissueView.tissueViewModel!!.getCell(10, 10)
                     coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
