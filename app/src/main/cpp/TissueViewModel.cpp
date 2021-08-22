@@ -7,6 +7,8 @@
 #include <android/bitmap.h>
 #include <time.h>
 #include "tissue.h"
+clock_t accum_clock = 0;
+int times = 0;
 
 static int value = 0;
 static Tissue* tissue = nullptr;
@@ -17,17 +19,18 @@ extern Channel* channel[4];
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
-    time_t now, later;
-    time(&later);
+
+    clock_t begin = clock();
 
     Tissue_calcAll(tissue);
+    clock_t end = clock();
 
-    double seconds;
-    time(&now);
-    seconds = difftime(later, now);
+    clock_t spent_time = end - begin;
+    accum_clock += spent_time;
+    ++times;
 
-    __android_log_print(ANDROID_LOG_VERBOSE, "CalcAll","Calc Mean Time: %d", 4);
-
+    __android_log_print(ANDROID_LOG_VERBOSE, "CalcAll","Spent time: %ld; Calc Mean Time: %lf",
+                        spent_time, (double)accum_clock / (double)times / CLOCKS_PER_SEC * 1000);
 }
 
 extern "C"
@@ -211,13 +214,9 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
     unsigned char* pixelsChar = (unsigned char*) pixels;
 
     Bitmap_fillAll(pixels, &androidBitmapInfo, 0x203040FF);
-//    for (uint32_t x = 10; x < 20; ++x)
-//        for (uint32_t y = 10; y < 20; ++y)
-//            Bitmap_drawPoint(pixels, &androidBitmapInfo, x, y, 0x908070FF);
     for (uint32_t x = 10; x < 20; ++x)
         for (uint32_t y = 10; y < 20; ++y)
             Bitmap_drawLine(pixels, &androidBitmapInfo,60, 80, x, y, 0xFF908070);
-//    Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, 20, 19, 50, 50, 0xFF888888);
     Bitmap_drawBox(pixels, &androidBitmapInfo, 20, 20, 60, 60, 0xFF000000);
 
     AndroidBitmap_unlockPixels(env, jBitmap);

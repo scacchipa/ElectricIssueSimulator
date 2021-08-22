@@ -242,9 +242,8 @@ void Tissue_calcAll(Tissue* tissue) {
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
     int length = tissue->xSize * tissue->ySize;
     Cell* cell = tissue->cells;
-    for (int idx = 0; idx < length; ++idx) {
+    for (int idx = 0; idx < length; ++idx)
         func(cell++);
-    }
 }
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color)
