@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10.2)  # CMake version check
 project(simple_example)               # Create project "simple_example"
 set(CMAKE_CXX_STANDARD 14)            # Enable c++14 standard
 
-add_library( interface STATIC src/main/cpp/TissueViewModel.cpp)
-add_library( multiply-lib STATIC src/main/cpp/prueba.s )
-add_library( native-lib SHARED src/main/cpp/TissueViewModel.cpp)
+add_library( tissue STATIC src/main/cpp/tissue.c )
+add_library( interface STATIC src/main/cpp/TissueViewModel.cpp )
+add_library( native-lib SHARED src/main/cpp/TissueViewModel.cpp )
 find_library( log-lib log)
 find_library( jnigraphics-lib jnigraphics)
 target_link_libraries( native-lib
