@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             var tempo = 0f
             launch(mainContext) {
 //                var calcTimeAcc:Long = 0
-//                var times = 0
+//                var calcAll_times = 0
                 while (true) {
 
 //                    val startTime = System.nanoTime()
@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
 
 //                    val calcTime = System.nanoTime()
 //                    calcTimeAcc += calcTime - startTime
-//                    times++
-//                    println("Calc time: $calcTime; Mean Calc Time:${calcTimeAcc / times}")
+//                    calcAll_times++
+//                    println("Calc time: $calcTime; Mean Calc Time:${calcTimeAcc / calcAll_times}")
 
                     val cell = tissueView.tissueViewModel!!.getCell(10, 10)
                     coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))

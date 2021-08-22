@@ -7,12 +7,12 @@
 #include <android/bitmap.h>
 #include <time.h>
 #include "tissue.h"
-clock_t accum_clock = 0;
-int times = 0;
+clock_t accum_calcAll_clock = 0;
+int calcAll_times = 0;
+clock_t accum_paint_clock = 0;
+int paint_times = 0;
 
-static int value = 0;
 static Tissue* tissue = nullptr;
-extern uint32_t* cellColors[4];
 extern void(*calcChargeFunctions[4])(Cell*);
 extern Channel* channel[4];
 
@@ -26,11 +26,11 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject th
     clock_t end = clock();
 
     clock_t spent_time = end - begin;
-    accum_clock += spent_time;
-    ++times;
+    accum_calcAll_clock += spent_time;
+    ++calcAll_times;
 
     __android_log_print(ANDROID_LOG_VERBOSE, "CalcAll","Spent time: %ld; Calc Mean Time: %lf",
-                        spent_time, (double)accum_clock / (double)times / CLOCKS_PER_SEC * 1000);
+                        spent_time, (double)accum_calcAll_clock / (double)calcAll_times / CLOCKS_PER_SEC * 1000);
 }
 
 extern "C"
@@ -80,28 +80,28 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
                     {10, -75.0}, {10, -75.0}, {10, -75.0}, {400, -75.0},
                     {0, 0.0} },
     pairs[DEADCELL] = (Pair[]) {{0, 0.0}};
-
-    for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair)
+    int count = 0;
+    for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 || pPair->second != 0.0; ++pPair)
     {
         pPair->second = (pPair->second + 20.0) * 1.3;
     }
-    for (Pair *pPair = pairs[AUTOCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair)
+    for (Pair *pPair = pairs[AUTOCELL]; pPair->first != 0 || pPair->second != 0.0; ++pPair)
     {
         pPair->second = (pPair->second + 10.0) * 1.3;
     }
-    for (Pair *pPair = pairs[FASTCELL]; pPair->first != 0 && pPair->second != 0.0; ++pPair)
+    for (Pair *pPair = pairs[FASTCELL]; pPair->first != 0 || pPair->second != 0.0; ++pPair)
     {
         pPair->second = (pPair->second + 20.0) * 1.3;
     }
-    channel[MYOCELL] = Channel_create(-55, 0, pairs[MYOCELL]);
-    channel[AUTOCELL] = Channel_create(-45, 0, pairs[AUTOCELL]);
-    channel[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL]);
-    channel[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL]);
 
-    cellColors[MYOCELL] = Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
-    cellColors[AUTOCELL] = Cell_loadColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546);
-    cellColors[DEADCELL] = Cell_loadColorList(3, 0xFF000000);
-    cellColors[FASTCELL] = Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546);
+    channel[MYOCELL] = Channel_create(-55, 0, pairs[MYOCELL],
+                                      Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
+    channel[AUTOCELL] = Channel_create(-45, 0, pairs[AUTOCELL],
+                                       Cell_loadColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546));
+    channel[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL],
+                                       Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
+    channel[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL],
+                                       Cell_loadColorList(3, 0xFF000000));
 
     calcChargeFunctions[MYOCELL] = MyoCell_calculateCharge;
     calcChargeFunctions[AUTOCELL] = AutoCell_calculateCharge;
@@ -206,18 +206,30 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_getCell(JNIEnv *env, jobject th
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
-                                                        jobject thiz,jobject jBitmap) {
+                    jobject thiz,jobject jBitmap) {
+    clock_t begin = clock();
+
     AndroidBitmapInfo androidBitmapInfo ;
     void* pixels;
     AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);
     AndroidBitmap_lockPixels(env, jBitmap, &pixels);
-    unsigned char* pixelsChar = (unsigned char*) pixels;
 
-    Bitmap_fillAll(pixels, &androidBitmapInfo, 0x203040FF);
-    for (uint32_t x = 10; x < 20; ++x)
-        for (uint32_t y = 10; y < 20; ++y)
-            Bitmap_drawLine(pixels, &androidBitmapInfo,60, 80, x, y, 0xFF908070);
-    Bitmap_drawBox(pixels, &androidBitmapInfo, 20, 20, 60, 60, 0xFF000000);
-
+    for (uint32_t x = 0; x < tissue->xSize; ++x)
+        for (uint32_t y = 0; y < tissue-> ySize; ++y) {
+            Cell* cell = GETPCELL(tissue, x, y);
+            Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, x * 10 + 2, y * 10 + 2,
+                                  (x + 1) * 10 - 2, (y + 1) * 10 - 2,
+                                  cell->channel->cell_colors[cell->channelState]);
+        }
     AndroidBitmap_unlockPixels(env, jBitmap);
+    clock_t end = clock();
+
+    clock_t spent_time = end - begin;
+    accum_paint_clock += spent_time;
+    ++paint_times;
+
+    __android_log_print(ANDROID_LOG_VERBOSE, "Paint time","Spent time: %ld; Calc Mean Time: %lf",
+                        spent_time, (double)accum_paint_clock / (double)paint_times / CLOCKS_PER_SEC * 1000);
+
+
 }

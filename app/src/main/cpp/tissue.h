@@ -33,6 +33,7 @@ typedef struct Channel
     double activationGateThreadhold;
     double* alphaVector;
     size_t alphaVectorSize;
+    uint32_t* cell_colors;
 } Channel;
 typedef struct Cell
 {
@@ -68,7 +69,7 @@ void Cell_membranePotential(Cell* cell);
 void Cell_channelUpdate(Cell* cell);
 uint32_t* Cell_loadColorList(int num, ...);
 Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
-                        Pair* coords);
+                        Pair* coords, uint32_t* colors);
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize);
 
 Cell* Cell_upperCell(Cell* cell);

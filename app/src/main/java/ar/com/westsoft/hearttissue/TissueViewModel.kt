@@ -3,19 +3,15 @@ package ar.com.westsoft.hearttissue
 import androidx.lifecycle.ViewModel
 
 
-class TissueViewModel(val xSize: Int, val ySize: Int) : ViewModel() {
+class TissueViewModel(val colCount: Int, val rowCount: Int) : ViewModel() {
     init {
-        setUp(xSize, ySize)
+        setUp(colCount, rowCount)
     }
 
-    external fun setUp(cellRowCount: Int, cellColCount: Int)
+    private external fun setUp(cellRowCount: Int, cellColCount: Int)
     external fun setCell(cell: Cell, x:Int, y: Int)
     external fun getCell(x:Int, y: Int): Cell
     external fun calcAll()
-//    {
-//        forAll { it.membranePotential() }
-//        forAll { it.calculateCharge() }
-//        forAll { it.updateState() }
-//    }
+
 }
 

@@ -10,7 +10,6 @@
 #include <android/log.h>
 
 Channel* channel[4];
-uint32_t* cellColors[4];
 void(*calcChargeFunctions[4])(Cell*);
 
 void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
@@ -80,12 +79,15 @@ void Cell_channelUpdate(Cell* cell)
         ++cell->step;
 }
 Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
-                        Pair *coords)
+                        Pair *coords, uint32_t* cell_colors)
 {
     Channel *_channel = (Channel *) malloc(sizeof(Channel));
     _channel->inactivationGateThreadhold = inactGateThreadhold;
     _channel->activationGateThreadhold = actGateThreadhold;
     buildAlphaVector(coords, &(_channel->alphaVector), &(_channel->alphaVectorSize));
+
+    _channel->cell_colors = cell_colors;
+
     return _channel;
 }
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
@@ -95,7 +97,7 @@ void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t*
     int alphaVectorSize = 100;
     double * alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
     alphaVector[lastTime] = lastVm; ++lastTime;
-    for(const Pair* pInPair = inPairVector; pInPair->first != 0 && pInPair->second != 0.0; ++pInPair) {
+    for(const Pair* pInPair = inPairVector; pInPair->first != 0 || pInPair->second != 0.0; ++pInPair) {
         double deltaVolt = (pInPair->second - lastVm) / pInPair->first;
         for (int time = 0; time < pInPair->first; ++time) {
             lastVm += deltaVolt;
@@ -224,8 +226,6 @@ Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize)
     Cell *cells = malloc(xSize * ySize * sizeof(Cell));
     for (int idx = 0; idx < ySize; ++idx)
         for (int idy = 0; idy < ySize; ++idy) {
-            __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "%d %d %p\n",
-                                idx, idy, cells + ySize * idy + idx);
             MyoCell_create(cells + ySize * idy + idx, tissue, idx, idy);
         }
     return (Cell*) cells;

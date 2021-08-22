@@ -15,7 +15,8 @@ class TissueView: View {
             field = value
             bmp = if (value != null) {
                 val conf = Bitmap.Config.ARGB_8888
-                Bitmap.createBitmap(xCellSize * value.xSize, yCellSize * value.ySize, conf)
+                Bitmap.createBitmap(xCellSize * value.colCount,
+                    yCellSize * value.rowCount, conf)
             } else null
         }
     private val xCellSize = 10
