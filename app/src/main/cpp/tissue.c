@@ -92,24 +92,24 @@ Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
 }
 void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t* outAlphaSize) {
 
-    size_t lastTime = 0;
     double lastVm = inPairVector[0].second;
+    size_t lastTime = 0;
     int alphaVectorSize = 100;
     double * alphaVector = (double *)malloc(alphaVectorSize * sizeof(double));
-    alphaVector[lastTime] = lastVm; ++lastTime;
+    alphaVector[lastTime++] = lastVm;
     for(const Pair* pInPair = inPairVector; pInPair->first != 0 || pInPair->second != 0.0; ++pInPair) {
         double deltaVolt = (pInPair->second - lastVm) / pInPair->first;
         for (int time = 0; time < pInPair->first; ++time) {
+            if (alphaVectorSize < lastTime) {
+                alphaVectorSize += 100;
+                alphaVector = (double *)realloc(alphaVector, alphaVectorSize * sizeof(double));
+            }
             lastVm += deltaVolt;
             alphaVector[lastTime] = lastVm;
             ++lastTime;
-            if (alphaVectorSize < lastTime + time) {
-                alphaVectorSize += 100;
-                alphaVector = (double *)realloc(alphaVector, alphaVectorSize);
-            }
         }
     }
-    alphaVector = (double *)realloc(alphaVector, lastTime);
+    alphaVector = (double *)realloc(alphaVector, lastTime * sizeof(double));
     *outAlphaVector = alphaVector;
     *outAlphaSize = lastTime;
 }
