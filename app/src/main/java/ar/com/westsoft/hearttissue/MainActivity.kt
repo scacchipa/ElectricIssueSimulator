@@ -1,6 +1,7 @@
 package ar.com.westsoft.hearttissue
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import ar.com.westsoft.joyschool.electrictissuesimulator.R
 import kotlinx.coroutines.CoroutineScope
@@ -37,18 +38,10 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             var tempo = 0f
             launch(mainContext) {
-//                var calcTimeAcc:Long = 0
-//                var calcAll_times = 0
+
                 while (true) {
 
-//                    val startTime = System.nanoTime()
-
                     tissueViewModel.calcAll()
-
-//                    val calcTime = System.nanoTime()
-//                    calcTimeAcc += calcTime - startTime
-//                    calcAll_times++
-//                    println("Calc time: $calcTime; Mean Calc Time:${calcTimeAcc / calcAll_times}")
 
                     val cell = tissueView.tissueViewModel!!.getCell(10, 10)
                     coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
@@ -64,11 +57,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun onClickOnCell(x: Int, y: Int) {
+        Log.d("OnClick", "Pos: $x, $y")
+        val pointPos = tissueViewModel.getPosCell(x, y)
         when {
-            buttonPanel.autoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.AUTOCELL), x, y)
-            buttonPanel.myoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.MYOCELL), x, y)
-            buttonPanel.fastButton.isChecked -> tissueViewModel.setCell(Cell(CellType.FASTCELL), x, y)
-            else -> tissueViewModel.setCell(Cell(CellType.DEADCELL), x, y)
+            buttonPanel.autoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.AUTOCELL), pointPos.x, pointPos.y)
+            buttonPanel.myoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.MYOCELL), pointPos.x, pointPos.y)
+            buttonPanel.fastButton.isChecked -> tissueViewModel.setCell(Cell(CellType.FASTCELL), pointPos.x, pointPos.y)
+            else -> tissueViewModel.setCell(Cell(CellType.DEADCELL), pointPos.x, pointPos.y)
         }
         findViewById<TissueView>(R.id.tissueView).invalidate()
     }

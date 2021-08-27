@@ -37,17 +37,15 @@ class TissueView: View {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)
         when (event!!.action) {
-            MotionEvent.ACTION_DOWN -> return onClickOrMove(event)
-            MotionEvent.ACTION_MOVE -> return onClickOrMove(event)
+            MotionEvent.ACTION_DOWN,
+            MotionEvent.ACTION_MOVE -> {
+                callback!!.onClickOnCell(event.x.toInt(), event.y.toInt())
+                return true
+            }
         }
         return false
     }
-    private fun onClickOrMove(event: MotionEvent?):Boolean {
-        callback!!.onClickOnCell(
-                floor(event!!.x / xCellSize).toInt(),
-                floor(event.y / yCellSize).toInt())
-        return true
-    }
+
     override fun performClick(): Boolean {
         super.performClick()
 
@@ -59,7 +57,7 @@ class TissueView: View {
         super.onDraw(canvas)
         if (bmp != null) {
             printBitmap(bmp!!)
-            canvas?.drawBitmap(bmp!!, 20f, 20f, paint)
+            canvas?.drawBitmap(bmp!!, 0f, 0f, paint)
         }
     }
 }

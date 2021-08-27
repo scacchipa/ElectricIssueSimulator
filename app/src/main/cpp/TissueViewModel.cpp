@@ -16,6 +16,9 @@ static Tissue* tissue = nullptr;
 extern void(*calcChargeFunctions[4])(Cell*);
 extern Channel* channel[4];
 
+int xCellSize = 10;
+int yCellSize = 10;
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
@@ -80,7 +83,7 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
                     {10, -75.0}, {10, -75.0}, {10, -75.0}, {400, -75.0},
                     {0, 0.0} },
     pairs[DEADCELL] = (Pair[]) {{0, 0.0}};
-    int count = 0;
+
     for (Pair *pPair = pairs[MYOCELL]; pPair->first != 0 || pPair->second != 0.0; ++pPair)
     {
         pPair->second = (pPair->second + 20.0) * 1.3;
@@ -217,8 +220,8 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
     for (uint32_t x = 0; x < tissue->xSize; ++x)
         for (uint32_t y = 0; y < tissue-> ySize; ++y) {
             Cell* cell = GETPCELL(tissue, x, y);
-            Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, x * 10 + 2, y * 10 + 2,
-                                  (x + 1) * 10 - 2, (y + 1) * 10 - 2,
+            Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, x * xCellSize + 2, y * yCellSize + 2,
+                                  (x + 1) * xCellSize - 2, (y + 1) * yCellSize - 2,
                                   cell->channel->cell_colors[cell->channelState]);
         }
     AndroidBitmap_unlockPixels(env, jBitmap);
@@ -230,6 +233,18 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
 
     __android_log_print(ANDROID_LOG_VERBOSE, "Paint time","Spent time: %ld; Calc Mean Time: %lf",
                         spent_time, (double)accum_paint_clock / (double)paint_times / CLOCKS_PER_SEC * 1000);
+}
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_ar_com_westsoft_hearttissue_TissueViewModel_getPosCell(JNIEnv *env, jobject thiz,
+                                                            jint x_pixels, jint y_pixels) {
+    jint xPos = x_pixels / xCellSize;
+    jint yPos = y_pixels / yCellSize;
 
+    jclass pointClass = env->FindClass("android/graphics/Point");
+    jmethodID initPointId = env->GetMethodID(pointClass, "<init>", "(II)V");
 
+    jobject pointObj = env->NewObject(pointClass, initPointId, xPos, yPos);
+
+    return pointObj;
 }
