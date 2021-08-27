@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun onClickOnCell(x: Int, y: Int) {
-        Log.d("OnClick", "Pos: $x, $y")
         val pointPos = tissueViewModel.getPosCell(x, y)
         when {
             buttonPanel.autoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.AUTOCELL), pointPos.x, pointPos.y)

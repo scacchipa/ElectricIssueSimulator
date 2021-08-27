@@ -67,10 +67,10 @@ class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()): ViewM
 
         points.forEach { point ->
             tempBound.left = min(tempBound.left, point.first)
-            tempBound.top = max(tempBound.top, point.second)
             tempBound.right = max(tempBound.right, point.first)
-            tempBound.bottom = min(tempBound.bottom, point.second)
         }
+        tempBound.top = 60f
+        tempBound.bottom = -100f
         return tempBound
     }
     fun purge(): CoordGraphModel =
