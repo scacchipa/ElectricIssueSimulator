@@ -17,8 +17,9 @@ void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->tissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
+    cell->cellType = MYOCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[MYOCELL];
+    cell->channel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -28,8 +29,9 @@ void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->tissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
+    cell->cellType = AUTOCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[AUTOCELL];
+    cell->channel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -39,8 +41,9 @@ void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->tissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
+    cell->cellType = FASTCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[FASTCELL];
+    cell->channel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -50,6 +53,7 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->tissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
+    cell->cellType = DEADCELL;
     cell->channelState = RESTING;
     cell->channel = channel[DEADCELL];
     cell->step = 700;

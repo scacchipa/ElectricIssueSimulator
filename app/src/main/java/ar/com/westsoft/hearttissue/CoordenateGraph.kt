@@ -4,17 +4,13 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
-import androidx.lifecycle.ViewModel
-import kotlin.math.max
-import kotlin.math.min
+import ar.com.westsoft.hearttissue.model.CoordGraphModel
 
 class CoordenateGraph: View {
-
-    var coordGraphModel: CoordGraphModel? = null
-    var paint = Paint()
+    private var paint = Paint()
+    var coordModel = CoordGraphModel( List(0) { Pair(0f, 0f) })
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -27,52 +23,25 @@ class CoordenateGraph: View {
     init {
         paint.color = Color.BLACK
         paint.alpha = 0xFF
-        paint.strokeWidth = 5f
+        paint.strokeWidth = 2f
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
         paint.color = Color.BLACK
-        if (coordGraphModel != null) {
-            val bound = coordGraphModel!!.bound
-            if (bound.width() != 0f && bound.height() != 0f) {
-                val xScale = width.toFloat() / bound.width()
-                val yScale = height.toFloat() / bound.height()
-                canvas!!.translate(
-                    - bound.left * xScale,
-                    - bound.bottom * yScale + height.toFloat())
-                canvas.scale(xScale, yScale)
 
-                coordGraphModel!!.points.forEach { point ->
-                    canvas.drawPoint(point.first, point.second, paint)
-                }
+        if (coordModel.bound.width() != 0f && coordModel.bound.height() != 0f) {
+            val xScale = width.toFloat() / coordModel.bound.width()
+            val yScale = height.toFloat() / coordModel.bound.height()
+            canvas!!.translate(
+                - coordModel.bound.left * xScale,
+                - coordModel.bound.bottom * yScale + height.toFloat())
+            canvas.scale(xScale, yScale)
+
+            coordModel.points.forEach { point ->
+                canvas.drawPoint(point.first, point.second, paint)
             }
         }
     }
-}
-class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()): ViewModel() {
-    val bound: RectF
-
-    init {
-        bound = updateBound()
-    }
-
-    fun add(point: Pair<Float, Float>): CoordGraphModel =
-        CoordGraphModel(points + point).purge()
-
-    fun updateBound(): RectF {
-        if (points.isEmpty()) return RectF()
-        val tempBound = RectF(points[0].first, points[0].second, points[0].first, points[0].second)
-
-        points.forEach { point ->
-            tempBound.left = min(tempBound.left, point.first)
-            tempBound.right = max(tempBound.right, point.first)
-        }
-        tempBound.top = 60f
-        tempBound.bottom = -100f
-        return tempBound
-    }
-    fun purge(): CoordGraphModel =
-        CoordGraphModel(points.filterIndexed { index, _ -> index > points.size - 500 })
 }

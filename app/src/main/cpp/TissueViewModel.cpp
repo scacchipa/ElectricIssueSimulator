@@ -21,7 +21,7 @@ int yCellSize = 10;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject thiz) {
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_calcAll(JNIEnv *env, jobject thiz) {
 
     clock_t begin = clock();
 
@@ -38,10 +38,8 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_calcAll(JNIEnv *env, jobject th
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_ar_com_westsoft_hearttissue_TissueViewModel_setUp(JNIEnv *env,
-                                                       jobject thiz,
-                                                       jint cell_row_count,
-                                                       jint cell_col_count)
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_setUp(JNIEnv *env, jobject thiz,
+                                                      jint cell_col_count, jint cell_row_count)
 {
     if (tissue != nullptr) Tissue_destroy(tissue);
     tissue = Tissue_create(cell_col_count, cell_row_count);
@@ -113,8 +111,8 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_ar_com_westsoft_hearttissue_TissueViewModel_setCell(JNIEnv *env, jobject thiz, jobject jCell,
-                                                         jint x, jint y) {
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_setCell(JNIEnv *env, jobject thiz, jobject jCell,
+                                                jint x, jint y) {
     jclass jCellClass = env->GetObjectClass(jCell);
     jfieldID jCellType = env->GetFieldID(jCellClass, "cellType", "Lar/com/westsoft/hearttissue/CellType;");
     jfieldID jChannelStateId = env->GetFieldID(jCellClass, "state", "Lar/com/westsoft/hearttissue/ChannelState;");
@@ -157,8 +155,8 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_setCell(JNIEnv *env, jobject th
 }
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_ar_com_westsoft_hearttissue_TissueViewModel_getCell(JNIEnv *env, jobject thiz, jint x,
-                                                         jint y) {
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_getCell(JNIEnv *env, jobject thiz, jint x,
+                                                jint y) {
     Cell* pCell = (Cell*)(GETPCELL(tissue, x, y));
 
     jclass jCellClass = env->FindClass("ar/com/westsoft/hearttissue/Cell");
@@ -209,7 +207,7 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_getCell(JNIEnv *env, jobject th
 extern "C"
 JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
-                    jobject thiz,jobject jBitmap) {
+                    jobject thiz,jobject jBitmap, jintArray colors) {
     clock_t begin = clock();
 
     AndroidBitmapInfo androidBitmapInfo ;
@@ -217,12 +215,13 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
     AndroidBitmap_getInfo(env, jBitmap, &androidBitmapInfo);
     AndroidBitmap_lockPixels(env, jBitmap, &pixels);
 
+    jintArray pColor = colors;
     for (uint32_t x = 0; x < tissue->xSize; ++x)
         for (uint32_t y = 0; y < tissue-> ySize; ++y) {
-            Cell* cell = GETPCELL(tissue, x, y);
-            Bitmap_drawPaintedBox(pixels, &androidBitmapInfo, x * xCellSize + 2, y * yCellSize + 2,
+            Bitmap_drawPaintedBox(pixels, &androidBitmapInfo,
+                                  x * xCellSize + 2, y * yCellSize + 2,
                                   (x + 1) * xCellSize - 2, (y + 1) * yCellSize - 2,
-                                  cell->channel->cell_colors[cell->channelState]);
+                                  *(uint32_t *)pColor);
         }
     AndroidBitmap_unlockPixels(env, jBitmap);
     clock_t end = clock();
@@ -236,8 +235,8 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
 }
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_ar_com_westsoft_hearttissue_TissueViewModel_getPosCell(JNIEnv *env, jobject thiz,
-                                                            jint x_pixels, jint y_pixels) {
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_getPosCell(JNIEnv *env, jobject thiz,
+                                                   jint x_pixels, jint y_pixels) {
     jint xPos = x_pixels / xCellSize;
     jint yPos = y_pixels / yCellSize;
 
@@ -247,4 +246,20 @@ Java_ar_com_westsoft_hearttissue_TissueViewModel_getPosCell(JNIEnv *env, jobject
     jobject pointObj = env->NewObject(pointClass, initPointId, xPos, yPos);
 
     return pointObj;
+}
+extern "C"
+JNIEXPORT jintArray JNICALL
+Java_ar_com_westsoft_hearttissue_dominio_Tissue_getColorArray(JNIEnv *env, jobject thiz) {
+    int size = tissue->xSize * tissue->ySize;
+    jintArray result = env->NewIntArray(size);
+    Cell* pCell = tissue->cells;
+    jint colors[tissue->xSize * tissue->ySize];
+    jint* pColor = colors;
+    for (int x = 0; x < size; ++x) {
+            *pColor = pCell->channel->cell_colors[pCell->channelState];
+            ++pColor;
+        }
+
+    env->SetIntArrayRegion(result, 0, size, colors);
+    return result;
 }

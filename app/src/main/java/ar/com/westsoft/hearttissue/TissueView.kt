@@ -7,38 +7,29 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import kotlin.math.floor
+import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
 
 class TissueView: View {
-    var tissueViewModel: TissueViewModel? = null
-        set(value) {
-            field = value
-            bmp = if (value != null) {
-                val conf = Bitmap.Config.ARGB_8888
-                Bitmap.createBitmap(xCellSize * value.colCount,
-                    yCellSize * value.rowCount, conf)
-            } else null
-        }
+    var viewModel: TissueViewModel? = null
+
     private val xCellSize = 10
     private val yCellSize = 10
     var callback: MainActivity? = null
     val paint = Paint()
 
-    val w = 100
-    val h = 100
-    val conf = Bitmap.Config.ARGB_8888 // see other conf types
-    private var bmp: Bitmap? = null;
+    var bmp: Bitmap? = null
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    private external fun printBitmap(jBitmap: Bitmap)
+    private external fun printBitmap(jBitmap: Bitmap, colors: IntArray)
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)
         when (event!!.action) {
             MotionEvent.ACTION_DOWN,
             MotionEvent.ACTION_MOVE -> {
+                // TODO  Correct next line
                 callback!!.onClickOnCell(event.x.toInt(), event.y.toInt())
                 return true
             }
@@ -55,8 +46,13 @@ class TissueView: View {
     }
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        if (bmp != null) {
-            printBitmap(bmp!!)
+        viewModel?.let { vm ->
+            if (bmp != null) bmp = Bitmap.createBitmap(
+                xCellSize * vm.tissue.colCount,
+                yCellSize * vm.tissue.colCount,
+                Bitmap.Config.ARGB_8888
+            )
+            printBitmap(bmp!!, vm.getColors())
             canvas?.drawBitmap(bmp!!, 0f, 0f, paint)
         }
     }

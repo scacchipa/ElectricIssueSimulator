@@ -2,69 +2,66 @@ package ar.com.westsoft.hearttissue
 
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import ar.com.westsoft.joyschool.electrictissuesimulator.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
+import ar.com.westsoft.hearttissue.dominio.Tissue
+import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
+import ar.com.westsoft.joyschool.electrictissuesimulator.databinding.ActivityMainBinding
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ticker
+import kotlin.time.Duration
 
 class MainActivity : AppCompatActivity() {
     companion object {
         private external fun nativeInit()
+        val tissue: Tissue
         init {
-            System.loadLibrary("native-lib");
+            System.loadLibrary("native-lib")
             nativeInit()
+            tissue = Tissue(100, 100)
         }
     }
-    var tissueViewModel = TissueViewModel(100,100)
-    var coordGraphModel = CoordGraphModel()
-    lateinit var buttonPanel: PanelView
+
+    val tissueVM: TissueViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val tissueView: TissueView = findViewById(R.id.tissueView)
-        tissueView.tissueViewModel = tissueViewModel
-        tissueView.callback = this
+        tissueVM.tissueModel.observe(this) { println("Tissue Model Changed.") }
+        tissueVM.coordGraphModel.observe(this) {
+            print("Coordenate Graph Model.")
+            binding.coordenateGraph.coordModel = tissueVM.coordGraphModel.value
+                ?:binding.coordenateGraph.coordModel
+            binding.coordenateGraph.postInvalidate()
+        }
 
-        val coordenateGraph: CoordenateGraph = findViewById(R.id.coordenateGraph)
-        coordenateGraph.coordGraphModel = coordGraphModel
-
-        buttonPanel = findViewById(R.id.buttonPanel)
         val mainContext = newSingleThreadContext("CounterContext")
 
+
         CoroutineScope(Dispatchers.Main).launch {
-            var tempo = 0f
             launch(mainContext) {
-
+                Log.d("Coroutine","Launch Eternal loop.")
                 while (true) {
-
-                    tissueViewModel.calcAll()
-
-                    val cell = tissueView.tissueViewModel!!.getCell(10, 10)
-                    coordGraphModel = coordGraphModel.add(Pair(tempo, cell.vm.toFloat()))
-                    tempo++
-                    coordenateGraph.coordGraphModel = coordGraphModel
-
-                    launch(Dispatchers.Main) {
-                        tissueView.invalidate()
-                        coordenateGraph.invalidate()
-                    }
+                    delay(1000)
+                    Log.d("Coroutine","CalcAll")
+                    tissueVM.calcAll()
                 }
             }
         }
     }
+
     fun onClickOnCell(x: Int, y: Int) {
-        val pointPos = tissueViewModel.getPosCell(x, y)
-        when {
-            buttonPanel.autoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.AUTOCELL), pointPos.x, pointPos.y)
-            buttonPanel.myoButton.isChecked -> tissueViewModel.setCell(Cell(CellType.MYOCELL), pointPos.x, pointPos.y)
-            buttonPanel.fastButton.isChecked -> tissueViewModel.setCell(Cell(CellType.FASTCELL), pointPos.x, pointPos.y)
-            else -> tissueViewModel.setCell(Cell(CellType.DEADCELL), pointPos.x, pointPos.y)
+        tissueVM.getPosCell(x, y)?.let { point ->
+            when {
+                binding.buttonPanel.autoButton.isChecked -> tissueVM.setCell(Cell(CellType.AUTOCELL), point.x, point.y)
+                binding.buttonPanel.myoButton.isChecked -> tissueVM.setCell(Cell(CellType.MYOCELL), point.x, point.y)
+                binding.buttonPanel.fastButton.isChecked -> tissueVM.setCell(Cell(CellType.FASTCELL), point.x, point.y)
+                else -> tissueVM.setCell(Cell(CellType.DEADCELL), point.x, point.y)
+            }
         }
-        findViewById<TissueView>(R.id.tissueView).invalidate()
     }
 }
 
