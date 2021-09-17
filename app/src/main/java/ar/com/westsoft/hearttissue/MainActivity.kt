@@ -2,6 +2,7 @@ package ar.com.westsoft.hearttissue
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import ar.com.westsoft.hearttissue.dominio.Tissue
@@ -36,6 +37,11 @@ class MainActivity : AppCompatActivity() {
             binding.coordenateGraph.coordModel = tissueVM.coordGraphModel.value
                 ?:binding.coordenateGraph.coordModel
             binding.coordenateGraph.postInvalidate()
+        }
+        binding.tissueView.viewModel = tissueVM;
+        binding.tissueView.onTouchTissue = { col: Int, row: Int ->
+            tissueVM.setCell(Cell(cellType = CellType.AUTOCELL), col, row)
+            binding.tissueView.invalidate()
         }
 
         val mainContext = newSingleThreadContext("CounterContext")

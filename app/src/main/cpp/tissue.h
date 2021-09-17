@@ -13,7 +13,7 @@ extern "C" {
 #include <jni.h>
 #include <android/bitmap.h>
 
-#define GETPCELL(tissue, x, y) tissue->cells + tissue->ySize * y + x
+#define GETPCELL(tissue, x, y) tissue->pCells + tissue->ySize * y + x
 
 typedef enum ChannelState
 {
@@ -37,19 +37,19 @@ typedef struct Channel
 } Channel;
 typedef struct Cell
 {
-    struct Tissue* tissue;
+    struct Tissue* pTissue;
     int colPos;
     int rowPos;
     CellType cellType;
     ChannelState channelState;
-    Channel* channel;
+    Channel* pChannel;
     int step;
     double vm;
     double charge;
 } Cell;
 typedef struct Tissue
 {
-    Cell* cells;
+    Cell* pCells;
     int ySize;
     int xSize;
 } Tissue;

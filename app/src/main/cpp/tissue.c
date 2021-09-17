@@ -14,55 +14,55 @@ void(*calcChargeFunctions[4])(Cell*);
 
 void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
-    cell->tissue = tissue;
+    cell->pTissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
     cell->cellType = MYOCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[cell->cellType];
+    cell->pChannel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
 }
 void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
-    cell->tissue = tissue;
+    cell->pTissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
     cell->cellType = AUTOCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[cell->cellType];
+    cell->pChannel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
 }
 void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
-    cell->tissue = tissue;
+    cell->pTissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
     cell->cellType = FASTCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[cell->cellType];
+    cell->pChannel = channel[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
 }
 void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
-    cell->tissue = tissue;
+    cell->pTissue = tissue;
     cell->colPos = xPos;
     cell->rowPos = yPos;
     cell->cellType = DEADCELL;
     cell->channelState = RESTING;
-    cell->channel = channel[DEADCELL];
+    cell->pChannel = channel[DEADCELL];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
 }
 void Cell_membranePotential(Cell* cell)
 {
-    cell->vm = (cell->channel->alphaVector)[cell->step];
+    cell->vm = (cell->pChannel->alphaVector)[cell->step];
 }
 void Cell_channelUpdate(Cell* cell)
 {
@@ -79,7 +79,7 @@ void Cell_channelUpdate(Cell* cell)
     {
         cell->channelState = RESTING;
     }
-    if (cell->step < cell->channel->alphaVectorSize - 1)
+    if (cell->step < cell->pChannel->alphaVectorSize - 1)
         ++cell->step;
 }
 Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
@@ -134,56 +134,56 @@ uint32_t* Cell_loadColorList(int num, ...)
 Cell* Cell_upperCell(Cell* cell)
 {
     if (cell->rowPos > 0)
-        return GETPCELL(cell->tissue, cell->colPos, cell->rowPos - 1);
+        return GETPCELL(cell->pTissue, cell->colPos, cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_lowerCell(Cell* cell)
 {
-    if (cell->rowPos < cell->tissue->ySize - 1)
-        return GETPCELL(cell->tissue, cell->colPos, cell->rowPos + 1);
+    if (cell->rowPos < cell->pTissue->ySize - 1)
+        return GETPCELL(cell->pTissue, cell->colPos, cell->rowPos + 1);
     else
         return cell;
 }
 Cell* Cell_leftCell(Cell* cell)
 {
     if (cell->colPos > 0)
-        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos);
+        return GETPCELL(cell->pTissue, cell->colPos - 1, cell->rowPos);
     else
         return cell;
 }
 Cell* Cell_rightCell(Cell* cell)
 {
-    if (cell->colPos < cell->tissue->xSize - 1)
-        return GETPCELL(cell->tissue,cell->colPos + 1, cell->rowPos);
+    if (cell->colPos < cell->pTissue->xSize - 1)
+        return GETPCELL(cell->pTissue, cell->colPos + 1, cell->rowPos);
     else
         return cell;
 }
 Cell* Cell_lowerRightCell(Cell* cell)
 {
-    if (cell->colPos < cell->tissue->xSize - 1 && cell->rowPos < cell->tissue->ySize - 1)
-        return GETPCELL(cell->tissue,cell->colPos + 1,cell->rowPos + 1);
+    if (cell->colPos < cell->pTissue->xSize - 1 && cell->rowPos < cell->pTissue->ySize - 1)
+        return GETPCELL(cell->pTissue, cell->colPos + 1, cell->rowPos + 1);
     else
         return cell;
 }
 Cell* Cell_upperRightCell(Cell* cell)
 {
-    if (cell->colPos < cell->tissue->xSize - 1 && cell->rowPos > 0)
-        return GETPCELL(cell->tissue,cell->colPos + 1,cell->rowPos - 1);
+    if (cell->colPos < cell->pTissue->xSize - 1 && cell->rowPos > 0)
+        return GETPCELL(cell->pTissue, cell->colPos + 1, cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_upperLeftCell(Cell* cell)
 {
     if (cell->colPos > 0 && cell->rowPos > 0)
-        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos - 1);
+        return GETPCELL(cell->pTissue, cell->colPos - 1, cell->rowPos - 1);
     else
         return cell;
 }
 Cell* Cell_lowerLeftCell(Cell* cell)
 {
-    if (cell->colPos > 0 && cell->rowPos < cell->tissue->ySize - 1)
-        return GETPCELL(cell->tissue,cell->colPos - 1,cell->rowPos + 1);
+    if (cell->colPos > 0 && cell->rowPos < cell->pTissue->ySize - 1)
+        return GETPCELL(cell->pTissue, cell->colPos - 1, cell->rowPos + 1);
     else
         return cell;
 }
@@ -217,12 +217,12 @@ Tissue *Tissue_create(int xSize, int ySize) {
     Tissue *tissue = (Tissue *) malloc(sizeof(Tissue));
     tissue->xSize = xSize;
     tissue->ySize = ySize;
-    tissue->cells = Tissue_createCells(tissue, xSize, ySize);
+    tissue->pCells = Tissue_createCells(tissue, xSize, ySize);
 
     return tissue;
 }
 void Tissue_destroy(Tissue *tissue) {
-    Tissue_destroyCells(tissue->cells);
+    Tissue_destroyCells(tissue->pCells);
     free(tissue);
 }
 Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize)
@@ -245,7 +245,7 @@ void Tissue_calcAll(Tissue* tissue) {
 }
 void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
     int length = tissue->xSize * tissue->ySize;
-    Cell* cell = tissue->cells;
+    Cell* cell = tissue->pCells;
     for (int idx = 0; idx < length; ++idx)
         func(cell++);
 }
