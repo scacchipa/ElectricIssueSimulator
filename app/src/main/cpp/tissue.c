@@ -10,19 +10,19 @@
 #include <android/log.h>
 
 Channel* channel[4];
-void(*calcChargeFunctions[4])(Cell*);
+void(*calcChargeFunctions[4])(Cell*, Cell*);
 
-void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
+void MyoCell_create(Cell* pCell, Tissue* tissue, int xPos, int yPos)
 {
-    cell->pTissue = tissue;
-    cell->colPos = xPos;
-    cell->rowPos = yPos;
-    cell->cellType = MYOCELL;
-    cell->channelState = RESTING;
-    cell->pChannel = channel[cell->cellType];
-    cell->step = 700;
-    cell->vm = -70;
-    cell->charge = -70;
+    pCell->pTissue = tissue;
+    pCell->colPos = xPos;
+    pCell->rowPos = yPos;
+    pCell->cellType = MYOCELL;
+    pCell->channelState = RESTING;
+    pCell->pChannel = channel[pCell->cellType];
+    pCell->step = 700;
+    pCell->vm = -70;
+    pCell->charge = -70;
 }
 void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
 {
@@ -60,27 +60,30 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->vm = -70;
     cell->charge = -70;
 }
-void Cell_membranePotential(Cell* cell)
+void Cell_membranePotential(Cell* pTargetCells, Cell* pSourceCells)
 {
-    cell->vm = (cell->pChannel->alphaVector)[cell->step];
+    pTargetCells->vm = (pTargetCells->pChannel->alphaVector)[pTargetCells->step];
 }
-void Cell_channelUpdate(Cell* cell)
+void Cell_channelUpdate(Cell* pTargetCells, Cell* pSourceCells)
 {
-    if (cell->channelState == RESTING && cell->charge > -45)
+    if (pTargetCells->channelState == RESTING
+        && pTargetCells->charge > pTargetCells->pChannel->inactivationGateThreadhold)
     {
-        cell->channelState = OPEN;
-        cell->step = 0;
+        pTargetCells->channelState = OPEN;
+        pTargetCells->step = 0;
     }
-    else if (cell->channelState == OPEN && cell->charge > 0)
+    else if (pTargetCells->channelState == OPEN
+             && pTargetCells->charge > pTargetCells->pChannel->activationGateThreadhold)
     {
-        cell->channelState = INACTIVE;
+        pTargetCells->channelState = INACTIVE;
     }
-    else if (cell->channelState == INACTIVE && cell->charge < -45)
+    else if (pTargetCells->channelState == INACTIVE
+             && pTargetCells->charge < pTargetCells->pChannel->inactivationGateThreadhold)
     {
-        cell->channelState = RESTING;
+        pTargetCells->channelState = RESTING;
     }
-    if (cell->step < cell->pChannel->alphaVectorSize - 1)
-        ++cell->step;
+    if (pTargetCells->step < pTargetCells->pChannel->alphaVectorSize - 1)
+        ++pTargetCells->step;
 }
 Channel *Channel_create(double inactGateThreadhold, double actGateThreadhold,
                         Pair *coords, uint32_t* cell_colors)
@@ -188,31 +191,31 @@ Cell* Cell_lowerLeftCell(Cell* cell)
         return cell;
 }
 
-void Cell_calculateCharge(Cell* cell) {
-    calcChargeFunctions[cell->cellType](cell);
+void Cell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell) {
+    calcChargeFunctions[pTargetCell->cellType](pTargetCell, pSourceCell);
 }
-void MyoCell_calculateCharge(Cell* cell) {
-    cell->charge = 0.4 * cell->vm +
-                   (Cell_upperCell(cell)->vm + Cell_lowerCell(cell)->vm + Cell_leftCell(cell)->vm +
-                    Cell_rightCell(cell)->vm + Cell_lowerRightCell(cell)->vm +
-                    Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
-                    Cell_lowerLeftCell(cell)->vm) * 0.075;
+void MyoCell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell) {
+    pTargetCell->charge = 0.4 * pTargetCell->vm +
+                          (Cell_upperCell(pTargetCell)->vm + Cell_lowerCell(pTargetCell)->vm + Cell_leftCell(pTargetCell)->vm +
+                           Cell_rightCell(pTargetCell)->vm + Cell_lowerRightCell(pTargetCell)->vm +
+                           Cell_upperRightCell(pTargetCell)->vm + Cell_upperLeftCell(pTargetCell)->vm +
+                           Cell_lowerLeftCell(pTargetCell)->vm) * 0.075;
 }
-void AutoCell_calculateCharge(Cell* cell) {
-    cell->charge = 0.6 * cell->vm +
-                   (Cell_upperCell(cell)->vm + Cell_lowerCell(cell)->vm + Cell_leftCell(cell)->vm +
-                    Cell_rightCell(cell)->vm + Cell_lowerRightCell(cell)->vm +
-                    Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
-                    Cell_lowerLeftCell(cell)->vm) * 0.05;
+void AutoCell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell) {
+    pTargetCell->charge = 0.6 * pTargetCell->vm +
+                          (Cell_upperCell(pTargetCell)->vm + Cell_lowerCell(pTargetCell)->vm + Cell_leftCell(pTargetCell)->vm +
+                           Cell_rightCell(pTargetCell)->vm + Cell_lowerRightCell(pTargetCell)->vm +
+                           Cell_upperRightCell(pTargetCell)->vm + Cell_upperLeftCell(pTargetCell)->vm +
+                           Cell_lowerLeftCell(pTargetCell)->vm) * 0.05;
 }
-void FastCell_calculateCharge(Cell* cell) {
-    cell->charge = 0.4 * cell->vm +
-                   (Cell_upperCell(cell)->vm + Cell_lowerCell(cell)->vm + Cell_leftCell(cell)->vm +
-                    Cell_rightCell(cell)->vm + Cell_lowerRightCell(cell)->vm +
-                    Cell_upperRightCell(cell)->vm + Cell_upperLeftCell(cell)->vm +
-                    Cell_lowerLeftCell(cell)->vm) * 0.075;
+void FastCell_calculateCharge(Cell* pTargetCell, Cell* SourceCell) {
+    pTargetCell->charge = 0.4 * pTargetCell->vm +
+                          (Cell_upperCell(pTargetCell)->vm + Cell_lowerCell(pTargetCell)->vm + Cell_leftCell(pTargetCell)->vm +
+                           Cell_rightCell(pTargetCell)->vm + Cell_lowerRightCell(pTargetCell)->vm +
+                           Cell_upperRightCell(pTargetCell)->vm + Cell_upperLeftCell(pTargetCell)->vm +
+                           Cell_lowerLeftCell(pTargetCell)->vm) * 0.075;
 }
-void DeadCell_calculateCharge(Cell* cell) { }
+void DeadCell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell) { }
 Tissue *Tissue_create(int xSize, int ySize) {
     Tissue *tissue = (Tissue *) malloc(sizeof(Tissue));
     tissue->xSize = xSize;
@@ -221,33 +224,49 @@ Tissue *Tissue_create(int xSize, int ySize) {
 
     return tissue;
 }
+Tissue* Tissue_clone(Tissue* pTissue) {
+    Tissue* pClonedTissue = malloc(sizeof(Tissue));
+    memcpy(pClonedTissue, pTissue, sizeof(Tissue));
+
+    pClonedTissue->pCells = Tissue_cloneCells(pTissue);
+
+    return pClonedTissue;
+}
 void Tissue_destroy(Tissue *tissue) {
     Tissue_destroyCells(tissue->pCells);
     free(tissue);
 }
-Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize)
+Cell* Tissue_createCells(Tissue* pTissue, int xSize, int ySize)
 {
-    Cell *cells = malloc(xSize * ySize * sizeof(Cell));
-    for (int idx = 0; idx < ySize; ++idx)
-        for (int idy = 0; idy < ySize; ++idy) {
-            MyoCell_create(cells + ySize * idy + idx, tissue, idx, idy);
+    Cell *pCells = malloc(xSize * ySize * sizeof(Cell));
+    for (int idy = 0; idy < ySize; ++idy)
+        for (int idx = 0; idx < xSize; ++idx) {
+            MyoCell_create(pCells + xSize * idy + idx, pTissue, idx, idy);
         }
-    return (Cell*) cells;
+    return (Cell*) pCells;
+}
+Cell* Tissue_cloneCells(Tissue* pTissue) {
+    int cellCount = pTissue->xSize * pTissue->ySize;
+    Cell* pCells = malloc(cellCount * sizeof(Cell));
+    memcpy(pCells, pTissue->pCells, cellCount * sizeof(Cell));
+    return pCells;
 }
 void Tissue_destroyCells(Cell *cells)
 {
     free(cells);
 }
-void Tissue_calcAll(Tissue* tissue) {
-    Tissue_forAllCells(tissue, Cell_membranePotential);
-    Tissue_forAllCells(tissue, Cell_calculateCharge);
-    Tissue_forAllCells(tissue, Cell_channelUpdate);
+void Tissue_calcAll(Tissue* pTargetTissue, Tissue* pSourceTissue)
+{
+    Tissue_forAllCells(pTargetTissue, pSourceTissue, Cell_membranePotential);
+    Tissue_forAllCells(pTargetTissue, pSourceTissue, Cell_calculateCharge);
+    Tissue_forAllCells(pTargetTissue, pSourceTissue, Cell_channelUpdate);
 }
-void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*)) {
-    int length = tissue->xSize * tissue->ySize;
-    Cell* cell = tissue->pCells;
+void Tissue_forAllCells(Tissue* pTargetTissue, Tissue* pSourceTissue, void(*func)(Cell*, Cell*)) {
+    int length = pTargetTissue->xSize * pTargetTissue->ySize;
+    Cell* pTargetCell = pTargetTissue->pCells;
+    Cell* pSourceCell = pSourceTissue->pCells;
     for (int idx = 0; idx < length; ++idx)
-        func(cell++);
+        func(pTargetCell++, pSourceCell++);
 }
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color)

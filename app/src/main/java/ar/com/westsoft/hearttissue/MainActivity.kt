@@ -8,10 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import ar.com.westsoft.hearttissue.dominio.Tissue
 import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
 import ar.com.westsoft.joyschool.electrictissuesimulator.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -64,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             launch(mainContext) {
                 Log.d("Coroutine","Launch Eternal loop.")
                 while (true) {
-                    //delay(100)
+                    delay(100)
                     tissueVM.calcAll()
                 }
             }

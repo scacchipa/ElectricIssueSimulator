@@ -13,7 +13,7 @@ extern "C" {
 #include <jni.h>
 #include <android/bitmap.h>
 
-#define GETPCELL(tissue, x, y) tissue->pCells + tissue->ySize * y + x
+#define GETPCELL(tissue, x, y) (tissue)->pCells + (tissue)->xSize * (y) + (x)
 
 typedef enum ChannelState
 {
@@ -60,13 +60,13 @@ typedef struct Pair
     double second;
 } Pair;
 
-void MyoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
+void MyoCell_create(Cell* pCell, Tissue* tissue, int xPos, int yPos);
 void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
 void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
 void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos);
 
-void Cell_membranePotential(Cell* cell);
-void Cell_channelUpdate(Cell* cell);
+void Cell_membranePotential(Cell* pTargetCells, Cell* pSourceCells);
+void Cell_channelUpdate(Cell* pTargetCells, Cell* pSourceCells);
 uint32_t* Cell_loadColorList(int num, ...);
 Channel* Channel_create(double inactGateThreadhold, double actGateThreadhold,
                         Pair* coords, uint32_t* colors);
@@ -81,18 +81,20 @@ Cell* Cell_upperRightCell(Cell* cell);
 Cell* Cell_upperLeftCell(Cell* cell);
 Cell* Cell_lowerLeftCell(Cell* cell);
 
-void Cell_calculateCharge(Cell* cell);
-void MyoCell_calculateCharge(Cell* cell);
-void AutoCell_calculateCharge(Cell* cell);
-void FastCell_calculateCharge(Cell* cell);
-void DeadCell_calculateCharge(Cell* cell);
+void Cell_calculateCharge(Cell* pTargetCells, Cell* pSourceCell);
+void MyoCell_calculateCharge(Cell* pTargetCells, Cell* pSourceCell);
+void AutoCell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell);
+void FastCell_calculateCharge(Cell* pTargetCell, Cell* SourceCell);
+void DeadCell_calculateCharge(Cell* pTargetCell, Cell* pSourceCell);
 
 Tissue *Tissue_create(int xSize, int ySize);
+Tissue* Tissue_clone(Tissue* pTissue);
 void Tissue_destroy(Tissue *tissue);
-Cell* Tissue_createCells(Tissue* tissue, int xSize, int ySize);
+Cell* Tissue_createCells(Tissue* pTissue, int xSize, int ySize);
+Cell* Tissue_cloneCells(Tissue* pTissue);
 void Tissue_destroyCells(Cell *cells);
-void Tissue_calcAll(Tissue* tissue) ;
-void Tissue_forAllCells(Tissue* tissue, void(*func)(Cell*));
+void Tissue_calcAll(Tissue* pTargetTissue, Tissue* pSourceTissue);
+void Tissue_forAllCells(Tissue* pTargetTissue, Tissue* pSourceTissue, void(*func)(Cell*, Cell*));
 
 
 void Bitmap_fillAll(void* pixels, AndroidBitmapInfo* androidBitmapInfo, uint32_t color);

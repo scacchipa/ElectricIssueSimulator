@@ -27,7 +27,7 @@ class TissueViewModel: ViewModel() {
 
         val pos = selCoordModel.value?:Point(10,10)
         val cell = tissue.getCell(pos.x, pos.y)
-        val newCoord = coordGraphModel.value?.add(Pair(time, cell.vm.toFloat()))
+        val newCoord = coordGraphModel.value?.add(Pair(time, cell.charge.toFloat()))
             ?:CoordGraphModel()
         time++
 
