@@ -30,14 +30,11 @@ class TissueViewModel: ViewModel() {
         val newCoord = coordGraphModel.value?.add(Pair(time, cell.vm.toFloat()))
             ?:CoordGraphModel()
         time++
-        
+
         println("Cell ${pos.x}, ${pos.y}. VM:${cell.vm}")
         tissueModel.postValue(tissueModel.value?.copy(colors = tissue.getColorArray()))
         coordGraphModel.postValue(newCoord)
     }
-
-//    fun getPosCell(xPixels: Int, yPixels: Int): Point =
-//        tissue.getPosCell(xPixels, yPixels)
 
     fun createNewModel() = TissueModel(tissue.colCount, tissue.rowCount, tissue.getColorArray())
 

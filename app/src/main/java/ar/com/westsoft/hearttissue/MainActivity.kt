@@ -36,6 +36,15 @@ class MainActivity : AppCompatActivity() {
         binding.coordenateGraph.viewModel = tissueVM
         binding.tissueView.onTouchTissue = { col: Int, row: Int ->
             tissueVM.setCell(Cell(cellType = CellType.AUTOCELL), col, row)
+            when {
+                binding.buttonPanel.autoButton.isChecked ->
+                    tissueVM.setCell(Cell(CellType.AUTOCELL), col, row)
+                binding.buttonPanel.myoButton.isChecked ->
+                    tissueVM.setCell(Cell(CellType.MYOCELL), col, row)
+                binding.buttonPanel.fastButton.isChecked ->
+                    tissueVM.setCell(Cell(CellType.FASTCELL), col, row)
+                else -> tissueVM.setCell(Cell(CellType.DEADCELL), col, row)
+            }
             binding.tissueView.invalidate()
         }
         binding.ctrlPanel.onChanged = { col: Int, row: Int ->
@@ -58,17 +67,6 @@ class MainActivity : AppCompatActivity() {
                     //delay(100)
                     tissueVM.calcAll()
                 }
-            }
-        }
-    }
-
-    fun onClickOnCell(x: Int, y: Int) {
-        binding.tissueView.getPosCell(x, y).let { point ->
-            when {
-                binding.buttonPanel.autoButton.isChecked -> tissueVM.setCell(Cell(CellType.AUTOCELL), point.x, point.y)
-                binding.buttonPanel.myoButton.isChecked -> tissueVM.setCell(Cell(CellType.MYOCELL), point.x, point.y)
-                binding.buttonPanel.fastButton.isChecked -> tissueVM.setCell(Cell(CellType.FASTCELL), point.x, point.y)
-                else -> tissueVM.setCell(Cell(CellType.DEADCELL), point.x, point.y)
             }
         }
     }
