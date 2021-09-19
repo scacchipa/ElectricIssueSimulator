@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         binding.tissueView.viewModel = tissueVM
         binding.coordenateGraph.viewModel = tissueVM
         binding.tissueView.onTouchTissue = { col: Int, row: Int ->
-            tissueVM.setCell(Cell(cellType = CellType.AUTOCELL), col, row)
             when {
                 binding.buttonPanel.autoButton.isChecked ->
                     tissueVM.setCell(Cell(CellType.AUTOCELL), col, row)
