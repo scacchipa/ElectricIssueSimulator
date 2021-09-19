@@ -237,7 +237,7 @@ Java_ar_com_westsoft_hearttissue_dominio_Tissue_getColorArray(JNIEnv *env, jobje
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
+Java_ar_com_westsoft_hearttissue_view_TissueView_printBitmap(JNIEnv *env,
                     jobject thiz,jobject jBitmap, jintArray colors) {
     clock_t begin = clock();
 
@@ -265,24 +265,10 @@ Java_ar_com_westsoft_hearttissue_TissueView_printBitmap(JNIEnv *env,
     __android_log_print(ANDROID_LOG_VERBOSE, "Paint time","Spent time: %ld; Calc Mean Time: %lf",
                         spent_time, (double)accum_paint_clock / (double)paint_times / CLOCKS_PER_SEC * 1000);
 }
-extern "C"
-JNIEXPORT jobject JNICALL
-Java_ar_com_westsoft_hearttissue_dominio_Tissue_getPosCell(JNIEnv *env, jobject thiz,
-                                                   jint x_pixels, jint y_pixels) {
-    jint xPos = x_pixels / xCellSize;
-    jint yPos = y_pixels / yCellSize;
-
-    jclass pointClass = env->FindClass("android/graphics/Point");
-    jmethodID initPointId = env->GetMethodID(pointClass, "<init>", "(II)V");
-
-    jobject pointObj = env->NewObject(pointClass, initPointId, xPos, yPos);
-
-    return pointObj;
-}
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_ar_com_westsoft_hearttissue_TissueView_getPosCell(JNIEnv *env, jobject thiz, jint x, jint y) {
+Java_ar_com_westsoft_hearttissue_view_TissueView_getPosCell(JNIEnv *env, jobject thiz, jint x, jint y) {
     jclass jPointClass = env->FindClass("android/graphics/Point");
     jmethodID jPointMethodId = env->GetMethodID(jPointClass, "<init>", "(II)V");
     return env->NewObject(jPointClass, jPointMethodId, x / xCellSize, y / yCellSize);

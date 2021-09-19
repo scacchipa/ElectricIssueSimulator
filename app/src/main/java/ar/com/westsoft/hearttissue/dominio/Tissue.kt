@@ -1,6 +1,5 @@
 package ar.com.westsoft.hearttissue.dominio
 
-import android.graphics.Point
 import ar.com.westsoft.hearttissue.Cell
 
 class Tissue(val colCount: Int, val rowCount: Int) {
@@ -12,7 +11,6 @@ class Tissue(val colCount: Int, val rowCount: Int) {
     external fun setCell(cell: Cell, x:Int, y: Int)
     external fun getCell(x:Int, y: Int): Cell
     external fun calcAll()
-    external fun getPosCell(xPixels: Int, yPixels: Int): Point
     external fun getColorArray(): IntArray
 }
 

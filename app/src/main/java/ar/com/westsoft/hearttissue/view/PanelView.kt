@@ -1,4 +1,4 @@
-package ar.com.westsoft.hearttissue
+package ar.com.westsoft.hearttissue.view
 
 import android.content.Context
 import android.util.AttributeSet

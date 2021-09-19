@@ -1,4 +1,4 @@
-package ar.com.westsoft.hearttissue
+package ar.com.westsoft.hearttissue.view
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -26,7 +26,7 @@ class TissueView: View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     private external fun printBitmap(jBitmap: Bitmap, colors: IntArray)
-    private external fun getPosCell(x: Int, y: Int): Point
+    external fun getPosCell(x: Int, y: Int): Point
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)

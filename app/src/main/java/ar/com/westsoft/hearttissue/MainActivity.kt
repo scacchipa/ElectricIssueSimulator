@@ -1,16 +1,17 @@
 package ar.com.westsoft.hearttissue
 
+import android.graphics.Point
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import ar.com.westsoft.hearttissue.dominio.Tissue
 import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
 import ar.com.westsoft.joyschool.electrictissuesimulator.databinding.ActivityMainBinding
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ticker
-import kotlin.time.Duration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -31,28 +32,30 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        tissueVM.tissueModel.observe(this) { println("Tissue Model Changed.") }
-        tissueVM.coordGraphModel.observe(this) {
-            print("Coordenate Graph Model.")
-            binding.coordenateGraph.coordModel = tissueVM.coordGraphModel.value
-                ?:binding.coordenateGraph.coordModel
-            binding.coordenateGraph.postInvalidate()
-        }
-        binding.tissueView.viewModel = tissueVM;
+        binding.tissueView.viewModel = tissueVM
+        binding.coordenateGraph.viewModel = tissueVM
         binding.tissueView.onTouchTissue = { col: Int, row: Int ->
             tissueVM.setCell(Cell(cellType = CellType.AUTOCELL), col, row)
             binding.tissueView.invalidate()
         }
+        binding.ctrlPanel.onChanged = { col: Int, row: Int ->
+            tissueVM.selCoordModel.postValue(Point(col, row))
+        }
+        tissueVM.coordGraphModel.observe(this) {
+            binding.coordenateGraph.postInvalidate()
+        }
+
+        tissueVM.tissueModel.observe(this) {
+            binding.tissueView.postInvalidate()
+        }
 
         val mainContext = newSingleThreadContext("CounterContext")
-
 
         CoroutineScope(Dispatchers.Main).launch {
             launch(mainContext) {
                 Log.d("Coroutine","Launch Eternal loop.")
                 while (true) {
-                    delay(1000)
-                    Log.d("Coroutine","CalcAll")
+                    //delay(100)
                     tissueVM.calcAll()
                 }
             }
@@ -60,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onClickOnCell(x: Int, y: Int) {
-        tissueVM.getPosCell(x, y)?.let { point ->
+        binding.tissueView.getPosCell(x, y).let { point ->
             when {
                 binding.buttonPanel.autoButton.isChecked -> tissueVM.setCell(Cell(CellType.AUTOCELL), point.x, point.y)
                 binding.buttonPanel.myoButton.isChecked -> tissueVM.setCell(Cell(CellType.MYOCELL), point.x, point.y)

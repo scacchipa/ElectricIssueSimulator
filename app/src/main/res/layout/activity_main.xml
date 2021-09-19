@@ -7,90 +7,73 @@
     tools:context="ar.com.westsoft.hearttissue.MainActivity">
 
     <FrameLayout
-        android:id="@+id/frameLayout"
+        android:id="@+id/tissueLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/frameLayout2"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/coordGraphLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ar.com.westsoft.hearttissue.TissueView
+        <ar.com.westsoft.hearttissue.view.TissueView
             android:id="@+id/tissueView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>
 
     <FrameLayout
-        android:id="@+id/frameLayout2"
+        android:id="@+id/coordGraphLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/frameLayout"
-        app:layout_constraintBottom_toTopOf="@id/gridLayout">
+        app:layout_constraintTop_toBottomOf="@id/tissueLayout"
+        app:layout_constraintBottom_toTopOf="@id/ctrlPanel">
 
-        <ar.com.westsoft.hearttissue.CoordenateGraph
+        <ar.com.westsoft.hearttissue.view.CoordenateGraph
             android:id="@+id/coordenateGraph"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>
 
-    <androidx.gridlayout.widget.GridLayout
-        android:id="@+id/gridLayout"
+    <ar.com.westsoft.hearttissue.view.CoordGraphControlView
+        android:id="@+id/ctrlPanel"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:columnCount="2"
-        app:rowCount="2"
-        app:layout_constraintBottom_toTopOf="@+id/frameLayout3"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/ControlPanelLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout2">
-        <EditText
-            android:id="@+id/active_x"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10" />
-
-        <EditText
-            android:id="@+id/active_y"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10" />
-
-        <EditText
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
-
-        <EditText
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
-    </androidx.gridlayout.widget.GridLayout>
+        app:layout_constraintTop_toBottomOf="@+id/coordGraphLayout">
+    </ar.com.westsoft.hearttissue.view.CoordGraphControlView>
 
     <FrameLayout
-        android:id="@+id/frameLayout3"
+        android:id="@+id/ControlPanelLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="5:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ar.com.westsoft.hearttissue.PanelView
+        <ar.com.westsoft.hearttissue.view.PanelView
             android:id="@+id/buttonPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -99,7 +82,7 @@
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">
 
-        </ar.com.westsoft.hearttissue.PanelView>
+        </ar.com.westsoft.hearttissue.view.PanelView>
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

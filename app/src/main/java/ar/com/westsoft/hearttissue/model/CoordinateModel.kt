@@ -28,5 +28,5 @@ data class CoordGraphModel(val points: List<Pair<Float, Float>> = ArrayList()) {
     }
 
     fun purge(): CoordGraphModel =
-        CoordGraphModel(points.filterIndexed { index, _ -> index > points.size - 500 })
+        CoordGraphModel(points.filterIndexed { index, _ -> index > points.size - 200 })
 }
