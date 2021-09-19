@@ -237,6 +237,13 @@ Java_ar_com_westsoft_hearttissue_dominio_Tissue_getColorArray(JNIEnv *env, jobje
 }
 extern "C"
 JNIEXPORT void JNICALL
+Java_ar_com_westsoft_hearttissue_view_TissueView_setCellSize(JNIEnv *env, jobject thiz, jint xSize,
+                                                             jint ySize) {
+    xCellSize = xSize;
+    yCellSize = ySize;
+}
+extern "C"
+JNIEXPORT void JNICALL
 Java_ar_com_westsoft_hearttissue_view_TissueView_printBitmap(JNIEnv *env,
                     jobject thiz,jobject jBitmap, jintArray colors) {
     clock_t begin = clock();
@@ -272,4 +279,12 @@ Java_ar_com_westsoft_hearttissue_view_TissueView_getPosCell(JNIEnv *env, jobject
     jclass jPointClass = env->FindClass("android/graphics/Point");
     jmethodID jPointMethodId = env->GetMethodID(jPointClass, "<init>", "(II)V");
     return env->NewObject(jPointClass, jPointMethodId, x / xCellSize, y / yCellSize);
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_ar_com_westsoft_hearttissue_view_TissueView_getCellSize(JNIEnv *env, jobject thiz) {
+    jclass jSizeClass = env->FindClass("android/util/Size");
+    jmethodID jSizeMethodId = env->GetMethodID(jSizeClass, "<init>", "(II)V");
+    return env->NewObject(jSizeClass, jSizeMethodId , xCellSize, yCellSize);
 }

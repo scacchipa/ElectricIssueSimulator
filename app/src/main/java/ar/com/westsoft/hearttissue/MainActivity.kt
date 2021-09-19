@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         init {
             System.loadLibrary("native-lib")
             nativeInit()
-            tissue = Tissue(100, 100)
+            tissue = Tissue(20, 20)
         }
     }
 
@@ -32,8 +32,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.tissueView.viewModel = tissueVM
         binding.coordenateGraph.viewModel = tissueVM
+        binding.tissueView.viewModel = tissueVM
+        binding.tissueView.setCellSize(40,40 )
         binding.tissueView.onTouchTissue = { col: Int, row: Int ->
             when {
                 binding.buttonPanel.autoButton.isChecked ->

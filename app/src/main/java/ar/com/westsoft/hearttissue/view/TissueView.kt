@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Point
 import android.util.AttributeSet
+import android.util.Size
 import android.view.MotionEvent
 import android.view.View
 import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
@@ -13,8 +14,7 @@ import ar.com.westsoft.hearttissue.viewmodel.TissueViewModel
 class TissueView: View {
     var viewModel: TissueViewModel? = null
 
-    private val xCellSize = 10
-    private val yCellSize = 10
+
     val paint = Paint()
 
     var bmp: Bitmap? = null
@@ -23,10 +23,13 @@ class TissueView: View {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int)
+            : super(context, attrs, defStyleAttr)
 
     private external fun printBitmap(jBitmap: Bitmap, colors: IntArray)
     external fun getPosCell(x: Int, y: Int): Point
+    external fun setCellSize(xSize: Int, ySize: Int)
+    external fun getCellSize(): Size
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)
@@ -51,9 +54,10 @@ class TissueView: View {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         viewModel?.let { vm ->
+            val cellSize = getCellSize()
             if (bmp == null) bmp = Bitmap.createBitmap(
-                xCellSize * vm.tissue.colCount,
-                yCellSize * vm.tissue.colCount,
+                cellSize.width * vm.tissue.colCount,
+                cellSize.height * vm.tissue.rowCount,
                 Bitmap.Config.ARGB_8888
             )
             val colors = vm.getColors()
