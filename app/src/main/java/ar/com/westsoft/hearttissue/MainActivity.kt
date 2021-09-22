@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             launch(mainContext) {
                 Log.d("Coroutine","Launch Eternal loop.")
                 while (true) {
-                    delay(100)
+                    delay(30)
                     tissueVM.calcAll()
                 }
             }

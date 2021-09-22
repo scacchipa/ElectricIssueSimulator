@@ -9,7 +9,7 @@
 #include <android/bitmap.h>
 #include <android/log.h>
 
-Channel* channel[4];
+Channel* pChannels[4];
 void(*calcChargeFunctions[4])(Cell*, Cell*);
 
 void MyoCell_create(Cell* pCell, Tissue* tissue, int xPos, int yPos)
@@ -19,7 +19,7 @@ void MyoCell_create(Cell* pCell, Tissue* tissue, int xPos, int yPos)
     pCell->rowPos = yPos;
     pCell->cellType = MYOCELL;
     pCell->channelState = RESTING;
-    pCell->pChannel = channel[pCell->cellType];
+    pCell->pChannel = pChannels[pCell->cellType];
     pCell->step = 700;
     pCell->vm = -70;
     pCell->charge = -70;
@@ -31,7 +31,7 @@ void AutoCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->cellType = AUTOCELL;
     cell->channelState = RESTING;
-    cell->pChannel = channel[cell->cellType];
+    cell->pChannel = pChannels[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -43,7 +43,7 @@ void FastCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->cellType = FASTCELL;
     cell->channelState = RESTING;
-    cell->pChannel = channel[cell->cellType];
+    cell->pChannel = pChannels[cell->cellType];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -55,7 +55,7 @@ void DeadCell_create(Cell* cell, Tissue* tissue, int xPos, int yPos)
     cell->rowPos = yPos;
     cell->cellType = DEADCELL;
     cell->channelState = RESTING;
-    cell->pChannel = channel[DEADCELL];
+    cell->pChannel = pChannels[DEADCELL];
     cell->step = 700;
     cell->vm = -70;
     cell->charge = -70;
@@ -123,7 +123,7 @@ void buildAlphaVector(const Pair* inPairVector, double** outAlphaVector, size_t*
 
 uint32_t* Cell_loadColorList(int num, ...)
 {
-    uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t));
+    uint32_t * colors = (uint32_t *)malloc(sizeof(uint32_t) * num);
     va_list valist;
     va_start(valist, num);
     for (int i = 0; i < num; i++)

@@ -14,7 +14,7 @@ int paint_times = 0;
 
 static Tissue* pTissue = nullptr;
 extern void(*calcChargeFunctions[4])(Cell*, Cell*);
-extern Channel* channel[4];
+extern Channel* pChannels[4];
 
 int xCellSize = 10;
 int yCellSize = 10;
@@ -104,14 +104,14 @@ Java_ar_com_westsoft_hearttissue_MainActivity_00024Companion_nativeInit(JNIEnv *
         pPair->second = (pPair->second + 20.0) * 1.3;
     }
 
-    channel[MYOCELL] = Channel_create(-55, 0, pairs[MYOCELL],
-                                      Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
-    channel[AUTOCELL] = Channel_create(-45, 0, pairs[AUTOCELL],
-                                       Cell_loadColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546));
-    channel[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL],
-                                       Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
-    channel[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL],
-                                       Cell_loadColorList(3, 0xFF000000));
+    pChannels[MYOCELL] = Channel_create(-55, 0, pairs[MYOCELL],
+                                        Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
+    pChannels[AUTOCELL] = Channel_create(-45, 0, pairs[AUTOCELL],
+                                         Cell_loadColorList(3, 0xFFFEB38B, 0xFFF9C80E, 0xFFEA3546));
+    pChannels[FASTCELL] = Channel_create(-55, 0, pairs[FASTCELL],
+                                         Cell_loadColorList(3, 0xFF032B43, 0xFFF9C80E, 0xFFEA3546));
+    pChannels[DEADCELL] = Channel_create(-55, 0, pairs[DEADCELL],
+                                         Cell_loadColorList(1, 0xFF000000));
 
     calcChargeFunctions[MYOCELL] = MyoCell_calculateCharge;
     calcChargeFunctions[AUTOCELL] = AutoCell_calculateCharge;
@@ -167,7 +167,7 @@ Java_ar_com_westsoft_hearttissue_dominio_Tissue_setCell(JNIEnv *env, jobject thi
         case DEADCELL:
             cell->cellType = DEADCELL;
     }
-    cell->pChannel = channel[cell->cellType];
+    cell->pChannel = pChannels[cell->cellType];
     switch (jChannelStateInt) {
         case RESTING: cell->channelState = RESTING; break;
         case OPEN: cell->channelState = OPEN; break;
